@@ -48,9 +48,14 @@
       -webkit-tap-highlight-color: transparent;
       filter: drop-shadow(0 5px 20px rgba(0, 0, 0, 0.7));
     }
-    .word a { cursor: pointer; }
-    .word image { transition: filter 0.18s ease; }
-    .word a:hover image { filter: brightness(1.12); }
+    /* the link + zoom live on the SVG anchor, so both react only to the letters */
+    .word a {
+      cursor: pointer;
+      transform-box: fill-box;
+      transform-origin: center;
+      transition: transform 0.18s ease;
+    }
+    .word a:hover { transform: scale(1.06); }
     .word text {
       font-family: 'Jacquard 12', 'Times New Roman', serif;
       font-size: 150px;
