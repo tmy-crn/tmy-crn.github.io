@@ -27,33 +27,43 @@
     .bg {
       position: fixed;
       inset: 0;
-      background: #000 url("bg.jpg") center / cover no-repeat;
+      background: #000;
       z-index: 0;
+      overflow: hidden;
+    }
+    .bg img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      transform: scale(0.9);         /* unzoom a little */
+      transform-origin: center;
+      /* fade the outer edges into the black body so the unzoom has no hard seam */
+      -webkit-mask-image: radial-gradient(140% 140% at 50% 50%, #000 80%, transparent 100%);
+              mask-image: radial-gradient(140% 140% at 50% 50%, #000 80%, transparent 100%);
     }
     .bg::after {
       content: "";
       position: absolute;
       inset: 0;
       background:
-        radial-gradient(120% 90% at 50% 50%, rgba(0,0,0,0) 45%, rgba(0,0,0,0.6) 100%),
-        rgba(0,0,0,0.18);
+        radial-gradient(130% 100% at 50% 50%, rgba(0,0,0,0) 40%, rgba(0,0,0,0.7) 100%),
+        rgba(0,0,0,0.15);
     }
-    .link {
+    .word {
       position: relative;
       z-index: 1;
-      display: block;
-      line-height: 0;
-      -webkit-tap-highlight-color: transparent;
-      transition: transform 0.18s ease, filter 0.18s ease;
-      filter: drop-shadow(0 5px 20px rgba(0, 0, 0, 0.7));
-    }
-    .link:hover { transform: scale(1.03); filter: drop-shadow(0 7px 26px rgba(190, 0, 0, 0.4)); }
-    .word {
       display: block;
       width: clamp(200px, 42vw, 430px);
       height: auto;
       overflow: visible;
+      filter: drop-shadow(0 5px 20px rgba(0, 0, 0, 0.7));
     }
+    .word a { cursor: pointer; }
+    .word image { transition: filter 0.18s ease; }
+    .word a:hover image { filter: brightness(1.12); }
     .word text {
       font-family: 'Jacquard 12', 'Times New Roman', serif;
       font-size: 150px;
@@ -62,19 +72,20 @@
   </style>
 </head>
 <body>
-  <div class="bg" aria-hidden="true"></div>
+  <div class="bg" aria-hidden="true"><img src="bg.jpg" alt="" /></div>
 
-  <a class="link" href="https://discord.gg/zJE2NZjqwx" aria-label="zeras — join the Discord">
-    <svg class="word" viewBox="0 0 800 240" preserveAspectRatio="xMidYMid meet"
-         xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-      <defs>
-        <clipPath id="zclip">
-          <text x="400" y="107" text-anchor="middle" dominant-baseline="central">zeras</text>
-        </clipPath>
-      </defs>
+  <svg class="word" viewBox="0 0 800 240" preserveAspectRatio="xMidYMid meet"
+       xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <defs>
+      <clipPath id="zclip">
+        <text x="400" y="107" text-anchor="middle" dominant-baseline="central">zeras</text>
+      </clipPath>
+    </defs>
+    <a href="https://discord.gg/zJE2NZjqwx" xlink:href="https://discord.gg/zJE2NZjqwx"
+       target="_top" aria-label="zeras — join the Discord">
       <image href="red.jpg" xlink:href="red.jpg" x="0" y="0" width="800" height="240"
              preserveAspectRatio="xMidYMid slice" clip-path="url(#zclip)" />
-    </svg>
-  </a>
+    </a>
+  </svg>
 </body>
 </html>
