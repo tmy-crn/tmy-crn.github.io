@@ -10,9 +10,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Jacquard+12&display=swap" rel="stylesheet" />
   <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body {
-      margin: 0;
-      padding: 0;
       height: 100%;
       background: #000;
       overflow: hidden;
@@ -31,44 +30,51 @@
       background: #000 url("bg.jpg") center / cover no-repeat;
       z-index: 0;
     }
-    /* subtle darkening + vignette so the red reads cleanly */
     .bg::after {
       content: "";
       position: absolute;
       inset: 0;
       background:
-        radial-gradient(120% 90% at 50% 45%, rgba(0,0,0,0) 45%, rgba(0,0,0,0.6) 100%),
+        radial-gradient(120% 90% at 50% 50%, rgba(0,0,0,0) 45%, rgba(0,0,0,0.6) 100%),
         rgba(0,0,0,0.18);
     }
-    .zeras {
+    .link {
       position: relative;
       z-index: 1;
-      font-family: 'Jacquard 12', 'Times New Roman', serif;
-      font-size: clamp(40px, 12vw, 150px);
-      line-height: 1;
-      letter-spacing: 0.02em;
-      text-align: center;
-      text-decoration: none;
-      user-select: none;
+      display: block;
+      line-height: 0;
       -webkit-tap-highlight-color: transparent;
-
-      background: url("red.jpg") center / cover;
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      -webkit-text-fill-color: transparent;
-
-      filter: drop-shadow(0 6px 24px rgba(0, 0, 0, 0.7));
       transition: transform 0.18s ease, filter 0.18s ease;
+      filter: drop-shadow(0 5px 20px rgba(0, 0, 0, 0.7));
     }
-    .zeras:hover {
-      transform: scale(1.02);
-      filter: drop-shadow(0 8px 30px rgba(190, 0, 0, 0.4));
+    .link:hover { transform: scale(1.03); filter: drop-shadow(0 7px 26px rgba(190, 0, 0, 0.4)); }
+    .word {
+      display: block;
+      width: clamp(150px, 34vw, 320px);
+      height: auto;
+      overflow: visible;
+    }
+    .word text {
+      font-family: 'Jacquard 12', 'Times New Roman', serif;
+      font-size: 150px;
+      letter-spacing: 3px;
     }
   </style>
 </head>
 <body>
   <div class="bg" aria-hidden="true"></div>
-  <a class="zeras" href="https://discord.gg/zJE2NZjqwx" aria-label="zeras — join the Discord">zeras</a>
+
+  <a class="link" href="https://discord.gg/zJE2NZjqwx" aria-label="zeras — join the Discord">
+    <svg class="word" viewBox="0 0 800 240" preserveAspectRatio="xMidYMid meet"
+         xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+      <defs>
+        <clipPath id="zclip">
+          <text x="400" y="120" text-anchor="middle" dominant-baseline="central">zeras</text>
+        </clipPath>
+      </defs>
+      <image href="red.jpg" xlink:href="red.jpg" x="0" y="0" width="800" height="240"
+             preserveAspectRatio="xMidYMid slice" clip-path="url(#zclip)" />
+    </svg>
+  </a>
 </body>
 </html>
