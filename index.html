@@ -21,6 +21,9 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      width: 100vw;
+      min-height: 100vh;
+      min-height: 100dvh;
     }
     .bg {
       position: fixed;
@@ -41,9 +44,10 @@
       position: relative;
       z-index: 1;
       font-family: 'Jacquard 12', 'Times New Roman', serif;
-      font-size: min(30vw, 48vh);
+      font-size: clamp(40px, 12vw, 150px);
       line-height: 1;
       letter-spacing: 0.02em;
+      text-align: center;
       text-decoration: none;
       user-select: none;
       -webkit-tap-highlight-color: transparent;
