@@ -98,12 +98,12 @@
       user-select: none;
       -webkit-user-select: none;
     }
-    /* Star popup pinned to bottom center above message */
+    /* Star popup centered in the message-section (not fixed to the screen viewport) */
     .popup-overlay {
       position: absolute;
-      bottom: clamp(6.5rem, 16vh, 12rem);
+      top: 50%;
       left: 50%;
-      transform: translate(-50%, 0) scale(0.6);
+      transform: translate(-50%, -50%) scale(0.6);
       width: clamp(140px, 35vw, 240px);
       height: clamp(140px, 35vw, 240px);
       pointer-events: none;
@@ -114,13 +114,13 @@
     }
     .popup-overlay.show {
       opacity: 1;
-      transform: translate(-50%, 0) scale(1);
+      transform: translate(-50%, -50%) scale(1);
       pointer-events: auto;
       cursor: pointer;
     }
     .popup-overlay.fade-out {
       opacity: 0;
-      transform: translate(-50%, 0) scale(1.15);
+      transform: translate(-50%, -50%) scale(1.15);
       transition: opacity 1.2s ease-in, transform 1.2s ease-in;
       pointer-events: none;
     }
