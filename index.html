@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Jacquard+12&display=swap" rel="stylesheet" />
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; text-transform: lowercase; }
     html, body {
       min-height: 100%;
       background: #000;
@@ -255,7 +255,7 @@
       color: #888;
     }
     .clicker-cps-text {
-      font-size: 18px;
+      font-size: 24px;
       color: rgba(255, 170, 170, 0.85);
       letter-spacing: 1px;
       margin-top: -0.2rem;
@@ -292,6 +292,88 @@
         opacity: 0;
         transform: translate(-10px, -8px) rotate(8deg) scale(0.7);
       }
+    }
+    /* Laser beam line */
+    .laser-beam {
+      position: fixed;
+      bottom: 0;
+      right: 2rem;
+      width: 4px;
+      height: 0;
+      background: linear-gradient(to top, #ff0000, #ff4444, #ff0000);
+      z-index: 10001;
+      pointer-events: none;
+      opacity: 0;
+      transform-origin: bottom right;
+      box-shadow: 0 0 12px 4px rgba(255, 0, 0, 0.8), 0 0 30px 8px rgba(255, 0, 0, 0.4);
+      border-radius: 2px;
+    }
+    .laser-beam.firing {
+      opacity: 1;
+      transition: opacity 0.05s;
+    }
+    .laser-beam.fade {
+      opacity: 0;
+      transition: opacity 0.3s ease-out;
+    }
+    /* Star chunks that fly off on laser hit */
+    .star-chunk {
+      position: fixed;
+      width: 18px;
+      height: 18px;
+      pointer-events: none;
+      z-index: 10002;
+      filter: brightness(0.8) sepia(1) hue-rotate(320deg) saturate(8) drop-shadow(0 0 6px rgba(255, 0, 0, 0.9));
+    }
+    @keyframes chunkFly {
+      0% {
+        opacity: 1;
+        transform: translate(0, 0) rotate(0deg) scale(1);
+      }
+      70% {
+        opacity: 0.8;
+        transform: translate(var(--cx), var(--cy)) rotate(var(--cr)) scale(0.7);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(var(--cx), calc(var(--cy) + 60px)) rotate(var(--cr)) scale(0.3);
+      }
+    }
+    /* Laser buy button style */
+    .laser-buy-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: rgba(50, 0, 0, 0.9);
+      border: 1.5px solid rgba(255, 80, 80, 0.6);
+      color: #ffe6e6;
+      padding: 0.6rem 1.1rem;
+      border-radius: 10px;
+      font-family: 'Jacquard 12', 'Times New Roman', serif;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.8);
+      transition: all 0.2s ease;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .laser-buy-btn:hover:not(:disabled) {
+      background: rgba(120, 0, 0, 0.98);
+      border-color: #ff4444;
+      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(255, 0, 0, 0.7);
+    }
+    .laser-buy-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      border-color: rgba(255, 255, 255, 0.2);
+      color: #888;
+    }
+    .laser-cps-text {
+      font-size: 24px;
+      color: rgba(255, 130, 130, 0.85);
+      letter-spacing: 1px;
+      margin-top: -0.2rem;
     }
   </style>
 </head>
@@ -331,10 +413,17 @@
       <span class="clicker-count-text" id="starCountDisplay">0</span>
     </div>
     <button class="clicker-buy-btn" id="buyClickerBtn">
-      <span>+1 Mouse (<span id="autoClickerCost">100</span>)</span>
+      <span>+1 mouse (<span id="autoClickerCost">100</span>)</span>
     </button>
     <div class="clicker-cps-text" id="cpsDisplay">0 clickers (0/s)</div>
+    <button class="laser-buy-btn" id="buyLaserBtn" style="display:none;">
+      <span>+1 laser (<span id="laserCost">1000</span>)</span>
+    </button>
+    <div class="laser-cps-text" id="laserDisplay" style="display:none;">0 lasers (0/s)</div>
   </div>
+
+  <!-- Laser beam element -->
+  <div class="laser-beam" id="laserBeam"></div>
 
   <script>
     (function () {
@@ -350,6 +439,12 @@
       const costDisplay = document.getElementById('autoClickerCost');
       const cpsDisplay = document.getElementById('cpsDisplay');
 
+      // Laser refs
+      const buyLaserBtn = document.getElementById('buyLaserBtn');
+      const laserCostDisplay = document.getElementById('laserCost');
+      const laserDisplay = document.getElementById('laserDisplay');
+      const laserBeam = document.getElementById('laserBeam');
+
       let count = 0;
       let hideTimeout = null;
       let spreeDecayTimer = null;
@@ -364,6 +459,12 @@
       let autoClickerBaseCost = 100;
       let autoClickerCost = 100;
       let autoClickInterval = null;
+
+      // Laser state
+      let laserCount = 0;
+      let laserBaseCost = 1000;
+      let laserCurrentCost = 1000;
+      let laserInterval = null;
 
       const messageSection = document.querySelector('.message-section');
 
@@ -384,6 +485,15 @@
           clickerHud.classList.add('active');
           clickerHud.removeAttribute('aria-hidden');
         }
+
+        // Show laser button once player hits 1000 lifetime clicks
+        if (totalClicksLifetime >= 1000) {
+          buyLaserBtn.style.display = '';
+          laserDisplay.style.display = '';
+        }
+        laserCostDisplay.textContent = laserCurrentCost;
+        laserDisplay.textContent = `${laserCount} lasers (${laserCount * 10}/s)`;
+        buyLaserBtn.disabled = starCurrency < laserCurrentCost;
       }
 
       function clearStars() {
@@ -567,6 +677,100 @@
 
       popup.addEventListener('click', () => {
         performStarClick(true);
+      });
+
+      // --- LASER BEAM LOGIC ---
+      function fireLaser() {
+        // Get the star's position on screen
+        const popupRect = popup.getBoundingClientRect();
+        const starCenterX = popupRect.left + popupRect.width / 2;
+        const starCenterY = popupRect.top + popupRect.height / 2;
+
+        // Laser origin: bottom-right area
+        const laserOriginX = window.innerWidth - 32;
+        const laserOriginY = window.innerHeight;
+
+        // Calculate angle and distance
+        const dx = starCenterX - laserOriginX;
+        const dy = starCenterY - laserOriginY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const angle = Math.atan2(dx, -dy); // angle from bottom
+
+        // Position and rotate the beam
+        laserBeam.style.height = distance + 'px';
+        laserBeam.style.right = '2rem';
+        laserBeam.style.transformOrigin = 'bottom center';
+        laserBeam.style.transform = `rotate(${angle}rad)`;
+
+        // Fire!
+        laserBeam.classList.remove('fade');
+        laserBeam.classList.add('firing');
+
+        // Spawn chunks at the star after a brief delay
+        setTimeout(() => {
+          spawnStarChunks(starCenterX, starCenterY);
+          // Add 10 clicks per laser
+          starCurrency += 10;
+          totalClicksLifetime += 10;
+          updateClickerUI();
+        }, 80);
+
+        // Fade beam
+        setTimeout(() => {
+          laserBeam.classList.remove('firing');
+          laserBeam.classList.add('fade');
+        }, 200);
+      }
+
+      function spawnStarChunks(cx, cy) {
+        const chunkCount = 5 + Math.floor(Math.random() * 3);
+        for (let i = 0; i < chunkCount; i++) {
+          const chunk = document.createElement('img');
+          chunk.src = 'favicon.svg';
+          chunk.className = 'star-chunk';
+          chunk.style.left = cx + 'px';
+          chunk.style.top = cy + 'px';
+
+          // Random direction
+          const flyX = (Math.random() - 0.5) * 200;
+          const flyY = (Math.random() - 0.7) * 180;
+          const flyRot = (Math.random() - 0.5) * 360;
+
+          chunk.style.setProperty('--cx', flyX + 'px');
+          chunk.style.setProperty('--cy', flyY + 'px');
+          chunk.style.setProperty('--cr', flyRot + 'deg');
+          chunk.style.animation = `chunkFly ${(0.6 + Math.random() * 0.4).toFixed(2)}s ease-out forwards`;
+
+          document.body.appendChild(chunk);
+
+          setTimeout(() => {
+            if (chunk.parentNode) chunk.parentNode.removeChild(chunk);
+          }, 1200);
+        }
+      }
+
+      function startLaserLoop() {
+        if (laserInterval) clearInterval(laserInterval);
+        if (laserCount <= 0) return;
+        // Each laser fires once per second
+        laserInterval = setInterval(() => {
+          for (let i = 0; i < laserCount; i++) {
+            setTimeout(() => {
+              fireLaser();
+            }, (1000 / laserCount) * i);
+          }
+        }, 1000);
+      }
+
+      buyLaserBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (starCurrency >= laserCurrentCost) {
+          starCurrency -= laserCurrentCost;
+          laserCount++;
+          laserCurrentCost = Math.round(laserBaseCost * Math.pow(1.35, laserCount));
+          startLaserLoop();
+          updateClickerUI();
+        }
       });
     })();
   </script>
