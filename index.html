@@ -98,11 +98,12 @@
       user-select: none;
       -webkit-user-select: none;
     }
+    /* Star popup pinned to bottom center above message */
     .popup-overlay {
-      position: fixed;
-      top: 50%;
+      position: absolute;
+      bottom: clamp(6.5rem, 16vh, 12rem);
       left: 50%;
-      transform: translate(-50%, -50%) scale(0.6);
+      transform: translate(-50%, 0) scale(0.6);
       width: clamp(140px, 35vw, 240px);
       height: clamp(140px, 35vw, 240px);
       pointer-events: none;
@@ -113,13 +114,13 @@
     }
     .popup-overlay.show {
       opacity: 1;
-      transform: translate(-50%, -50%) scale(1);
+      transform: translate(-50%, 0) scale(1);
       pointer-events: auto;
       cursor: pointer;
     }
     .popup-overlay.fade-out {
       opacity: 0;
-      transform: translate(-50%, -50%) scale(1.15);
+      transform: translate(-50%, 0) scale(1.15);
       transition: opacity 1.2s ease-in, transform 1.2s ease-in;
       pointer-events: none;
     }
@@ -157,7 +158,6 @@
       transform: translate(-50%, -50%) scale(0);
       animation: twinkleAndFloat var(--duration, 2.4s) ease-in-out infinite;
       animation-delay: var(--delay, 0s);
-      /* Make the star entirely dark crimson red */
       filter: brightness(0.6) sepia(1) hue-rotate(320deg) saturate(9) drop-shadow(0 0 6px rgba(160, 0, 0, 0.9));
     }
     @keyframes twinkleAndFloat {
@@ -216,7 +216,7 @@
     .clicker-mouse-icon {
       width: 30px;
       height: 30px;
-      fill: #ff3333;
+      object-fit: contain;
       filter: drop-shadow(0 0 7px rgba(255, 0, 0, 0.9));
     }
     .clicker-count-text {
@@ -243,14 +243,31 @@
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
     }
+    .clicker-buy-btn:hover:not(:disabled) {
+      background: rgba(95, 0, 0, 0.98);
+      border-color: #ff3333;
+      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
+    }
+    .clicker-buy-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      border-color: rgba(255, 255, 255, 0.2);
+      color: #888;
+    }
+    .clicker-cps-text {
+      font-size: 18px;
+      color: rgba(255, 170, 170, 0.85);
+      letter-spacing: 1px;
+      margin-top: -0.2rem;
+    }
     /* Animated auto-clicking mouse cursor */
     .flying-clicker-mouse {
       position: fixed;
-      width: 28px;
-      height: 28px;
+      width: 32px;
+      height: 32px;
       pointer-events: none;
       z-index: 10000;
-      fill: #ff2a2a;
       filter: drop-shadow(0 0 8px rgba(255, 0, 0, 0.95));
       animation: flyAndClick 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
@@ -264,7 +281,6 @@
         transform: translate(-30px, 15px) rotate(-15deg) scale(1);
       }
       65% {
-        /* Click press near the inner left edge of the star */
         opacity: 1;
         transform: translate(-10px, 0px) rotate(-5deg) scale(0.85);
       }
@@ -299,22 +315,19 @@
   </main>
 
   <section class="message-section" aria-label="message">
+    <div class="popup-overlay" id="faviconPopup" aria-hidden="true">
+      <img src="favicon.svg" id="popupImg" alt="zeras star" />
+    </div>
     <p class="message-text" id="loveText">i love you all</p>
   </section>
 
   <div class="vignette-overlay" id="vignetteOverlay" aria-hidden="true"></div>
   <div class="mini-stars-container" id="miniStarsContainer" aria-hidden="true"></div>
 
-  <div class="popup-overlay" id="faviconPopup" aria-hidden="true">
-    <img src="favicon.svg" id="popupImg" alt="zeras star" />
-  </div>
-
   <!-- Clicker HUD in right corner -->
   <div class="clicker-hud" id="clickerHud" aria-hidden="true">
     <div class="clicker-counter">
-      <svg class="clicker-mouse-icon" viewBox="0 0 24 24">
-        <path d="M12 2C8.69 2 6 4.69 6 8v8c0 3.31 2.69 6 6 6s6-2.69 6-6V8c0-3.31-2.69-6-6-6zm4 14c0 2.21-1.79 4-4 4s-4-1.79-4-4v-3h8v3zm0-5H8V8c0-2.21 1.79-4 4-4s4 1.79 4 4v3zm-5-5v3H9V6c0-.55.45-1 1-1s1 .45 1 1z"/>
-      </svg>
+      <img src="CLICKER.cur" class="clicker-mouse-icon" alt="mouse clicker" />
       <span class="clicker-count-text" id="starCountDisplay">0</span>
     </div>
     <button class="clicker-buy-btn" id="buyClickerBtn">
@@ -339,6 +352,7 @@
 
       let count = 0;
       let hideTimeout = null;
+      let spreeDecayTimer = null;
       let isRotated = false;
       let spamClicks = 0;
       let lastClickTime = 0;
@@ -380,16 +394,20 @@
         }, 2200);
       }
 
+      function scheduleSpreeDecay() {
+        clearTimeout(spreeDecayTimer);
+        // If fast clicking has stopped for over 2 seconds, slowly fade out vignette and clear stars
+        spreeDecayTimer = setTimeout(() => {
+          vignette.style.opacity = '0';
+          spamClicks = 0;
+        }, 2000);
+      }
+
       function spawnFlyingMouse() {
-        const mouse = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        mouse.setAttribute('viewBox', '0 0 24 24');
-        mouse.classList.add('flying-clicker-mouse');
+        const mouse = document.createElement('img');
+        mouse.src = 'CLICKER.cur';
+        mouse.className = 'flying-clicker-mouse';
 
-        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('d', 'M12 2C8.69 2 6 4.69 6 8v8c0 3.31 2.69 6 6 6s6-2.69 6-6V8c0-3.31-2.69-6-6-6zm4 14c0 2.21-1.79 4-4 4s-4-1.79-4-4v-3h8v3zm0-5H8V8c0-2.21 1.79-4 4-4s4 1.79 4 4v3zm-5-5v3H9V6c0-.55.45-1 1-1s1 .45 1 1z');
-        mouse.appendChild(path);
-
-        // Position slightly to the inner left of the center star
         const rect = popup.getBoundingClientRect();
         const targetX = rect.left + rect.width * 0.18 + (Math.random() * 16 - 8);
         const targetY = rect.top + rect.height * 0.48 + (Math.random() * 24 - 12);
@@ -442,15 +460,15 @@
             spamClicks = 1;
           }
           lastClickTime = now;
+          scheduleSpreeDecay();
         } else {
-          // Trigger visual flying mouse click on auto-click
           spawnFlyingMouse();
         }
 
         // Star scale logic:
         // Clicks < 20: 1.0x
         // Clicks 20 -> 50: Grows smoothly from 1.0x up to 1.55x
-        // Clicks 50+: Transitions back down to normal 1.0x
+        // Clicks >= 50: Locks strictly at normal 1.0x
         let currentScale = 1.0;
         if (totalStarClicks >= 20 && totalStarClicks < 50) {
           const progress = (totalStarClicks - 20) / 30; // 0 to 1
@@ -460,16 +478,12 @@
         }
 
         // Spin speed & smoothness logic:
-        // When 50+ clicks (cookie clicker active):
-        // Base spin speed is slower and buttery smooth (0.65s).
-        // During clicking spree (spamClicks > 1), it gradually speeds up down to 0.15s.
-        // Before 50 clicks: transition from 0.35s down to 0.12s during buildup.
         let spinSpeed = 0.35;
         let easing = 'cubic-bezier(0.34, 1.56, 0.64, 1)';
 
         if (totalStarClicks >= 50) {
-          const spreeFactor = Math.min(spamClicks / 10, 1); // 0 (idle/slow) -> 1 (fast spree)
-          spinSpeed = 0.65 - (spreeFactor * 0.50); // 0.65s (slow & smooth) -> 0.15s (fast spree)
+          const spreeFactor = Math.min(spamClicks / 10, 1);
+          spinSpeed = 0.65 - (spreeFactor * 0.50);
           easing = 'cubic-bezier(0.25, 1, 0.5, 1)';
         } else if (totalStarClicks >= 20) {
           const progress = (totalStarClicks - 20) / 30;
@@ -479,8 +493,6 @@
         popupImg.style.transition = `transform ${spinSpeed.toFixed(3)}s ${easing}`;
 
         // Rotation logic:
-        // Before 20 clicks: toggle between -90deg and 90deg
-        // At 20+ clicks: continuous single-direction spin (+90deg per click)
         if (totalStarClicks < 20) {
           isRotated = !isRotated;
           currentDeg = isRotated ? -90 : 90;
@@ -491,12 +503,10 @@
         popupImg.style.transform = `scale(${currentScale}) rotate(${currentDeg}deg)`;
 
         if (isManual) {
-          // Vignette only appears on active clicking sprees (when clicking rapidly >= 2 clicks)
+          // Vignette only appears on active clicking sprees
           if (spamClicks >= 2) {
             const vignetteIntensity = Math.min((spamClicks - 1) * 0.12, 0.95);
             vignette.style.opacity = vignetteIntensity.toString();
-          } else {
-            vignette.style.opacity = '0';
           }
 
           const starsToSpawn = Math.min(2 + Math.floor(spamClicks / 3), 4);
@@ -517,7 +527,6 @@
           if (!autoClickInterval) {
             autoClickInterval = setInterval(() => {
               for (let i = 0; i < autoClickers; i++) {
-                // Stagger multiple auto-clickers slightly for a natural effect
                 setTimeout(() => {
                   performStarClick(false);
                 }, (1000 / autoClickers) * i);
