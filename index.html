@@ -97,21 +97,8 @@
       cursor: pointer;
       user-select: none;
       -webkit-user-select: none;
-      transition: color 0.4s ease, transform 0.2s ease;
     }
-    .message-text.rumble {
-      animation: textShake 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
-      color: #ff3333;
-      text-shadow: 0 0 20px rgba(255, 0, 0, 0.9), 0 0 35px rgba(255, 0, 0, 0.6);
-    }
-    @keyframes textShake {
-      10%, 90% { transform: translate3d(-2px, 0, 0) scale(1.04); }
-      20%, 80% { transform: translate3d(3px, -1px, 0) scale(1.06); }
-      30%, 50%, 70% { transform: translate3d(-5px, 2px, 0) scale(1.08); }
-      40%, 60% { transform: translate3d(5px, -2px, 0) scale(1.08); }
-      100% { transform: translate3d(0, 0, 0) scale(1); }
-    }
-    /* Star popup centered in the bottom 100vh section (not fixed to screen, dead center when scrolled to bottom) */
+    /* Star popup centered in the bottom 100vh section */
     .popup-overlay {
       position: absolute;
       top: 50%;
@@ -123,7 +110,6 @@
       z-index: 9999;
       opacity: 0;
       transition: opacity 0.8s ease-out, transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      filter: drop-shadow(0 0 25px rgba(255, 0, 0, 0.6));
     }
     .popup-overlay.show {
       opacity: 1;
@@ -137,13 +123,14 @@
       transition: opacity 1.2s ease-in, transform 1.2s ease-in;
       pointer-events: none;
     }
-    .popup-overlay img {
+    .popup-overlay img#popupImg {
       width: 100%;
       height: 100%;
       display: block;
       transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
       user-select: none;
       -webkit-user-drag: none;
+      filter: drop-shadow(0 0 25px rgba(255, 0, 0, 0.6));
     }
     /* Red vignette overlay */
     .vignette-overlay {
@@ -277,33 +264,34 @@
     /* Animated auto-clicking mouse cursor (attached relative to the popup star) */
     .flying-clicker-mouse {
       position: absolute;
-      width: 32px;
-      height: 32px;
+      width: 20px;
+      height: 20px;
       pointer-events: none;
       z-index: 10000;
+      filter: none;
       animation: flyAndClick 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
     @keyframes flyAndClick {
       0% {
         opacity: 0;
-        transform: translate(-70px, 35px) rotate(-28deg) scale(0.7);
+        transform: translate(-50px, 25px) rotate(-25deg) scale(0.8);
       }
       35% {
         opacity: 0.95;
-        transform: translate(-25px, 12px) rotate(-15deg) scale(1);
+        transform: translate(-18px, 9px) rotate(-12deg) scale(1);
       }
       65% {
         /* Press clicking right on the inner left edge of the star */
         opacity: 1;
-        transform: translate(0px, 0px) rotate(-5deg) scale(0.85);
+        transform: translate(0px, 0px) rotate(0deg) scale(0.9);
       }
       80% {
         opacity: 0.8;
-        transform: translate(-5px, -5px) rotate(0deg) scale(1);
+        transform: translate(-3px, -3px) rotate(0deg) scale(1);
       }
       100% {
         opacity: 0;
-        transform: translate(-15px, -12px) rotate(10deg) scale(0.65);
+        transform: translate(-10px, -8px) rotate(8deg) scale(0.7);
       }
     }
   </style>
@@ -378,8 +366,6 @@
       let autoClickerCost = 100;
       let autoClickInterval = null;
 
-      let hasTriggeredClickerMode = false;
-
       function updateClickerUI() {
         countDisplay.textContent = Math.floor(totalStarClicks);
         costDisplay.textContent = autoClickerCost;
@@ -389,17 +375,6 @@
         if (totalStarClicks >= 50) {
           clickerHud.classList.add('active');
           clickerHud.removeAttribute('aria-hidden');
-
-          if (!hasTriggeredClickerMode) {
-            hasTriggeredClickerMode = true;
-            text.classList.remove('rumble');
-            // Force DOM reflow so animation re-triggers
-            void text.offsetWidth;
-            text.classList.add('rumble');
-            setTimeout(() => {
-              text.classList.remove('rumble');
-            }, 800);
-          }
         }
       }
 
