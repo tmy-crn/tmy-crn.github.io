@@ -293,50 +293,79 @@
         transform: translate(-10px, -8px) rotate(8deg) scale(0.7);
       }
     }
-    /* Laser beam line */
-    .laser-beam {
+    /* Lasgun bolt projectile */
+    .lasgun-bolt {
       position: fixed;
-      bottom: 0;
-      right: 2rem;
-      width: 4px;
-      height: 0;
-      background: linear-gradient(to top, #ff0000, #ff4444, #ff0000);
+      width: 5px;
+      height: 48px;
+      background: #ffffff;
+      border-radius: 4px;
       z-index: 10001;
       pointer-events: none;
-      opacity: 0;
-      transform-origin: bottom right;
-      box-shadow: 0 0 12px 4px rgba(255, 0, 0, 0.8), 0 0 30px 8px rgba(255, 0, 0, 0.4);
-      border-radius: 2px;
+      transform-origin: center bottom;
+      box-shadow:
+        0 0 8px 3px #ffffff,
+        0 0 18px 6px #ff0033,
+        0 0 35px 12px rgba(255, 0, 0, 0.85);
+      animation: lasgunFly 0.16s linear forwards;
     }
-    .laser-beam.firing {
-      opacity: 1;
-      transition: opacity 0.05s;
+    @keyframes lasgunFly {
+      0% {
+        opacity: 1;
+        transform: translate(var(--startX), var(--startY)) rotate(var(--angle)) scaleY(0.6);
+      }
+      20% {
+        opacity: 1;
+        transform: translate(calc(var(--startX) + (var(--targetX) - var(--startX)) * 0.25), calc(var(--startY) + (var(--targetY) - var(--startY)) * 0.25)) rotate(var(--angle)) scaleY(1.3);
+      }
+      90% {
+        opacity: 1;
+        transform: translate(calc(var(--startX) + (var(--targetX) - var(--startX)) * 0.95), calc(var(--startY) + (var(--targetY) - var(--startY)) * 0.95)) rotate(var(--angle)) scaleY(1.3);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(var(--targetX), var(--targetY)) rotate(var(--angle)) scaleY(0.4);
+      }
     }
-    .laser-beam.fade {
-      opacity: 0;
-      transition: opacity 0.3s ease-out;
+    /* Lasgun impact flash on star */
+    .laser-impact-flash {
+      position: fixed;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #ffffff 15%, #ff2222 55%, rgba(255, 0, 0, 0) 100%);
+      transform: translate(-50%, -50%) scale(0.4);
+      z-index: 10003;
+      pointer-events: none;
+      box-shadow: 0 0 25px 10px rgba(255, 20, 20, 0.9);
+      animation: impactFlashAnim 0.22s ease-out forwards;
+    }
+    @keyframes impactFlashAnim {
+      0% { opacity: 1; transform: translate(-50%, -50%) scale(0.5); }
+      50% { opacity: 1; transform: translate(-50%, -50%) scale(1.6); }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(2.2); }
     }
     /* Star chunks that fly off on laser hit */
     .star-chunk {
       position: fixed;
-      width: 18px;
-      height: 18px;
+      width: 16px;
+      height: 16px;
       pointer-events: none;
       z-index: 10002;
-      filter: brightness(0.8) sepia(1) hue-rotate(320deg) saturate(8) drop-shadow(0 0 6px rgba(255, 0, 0, 0.9));
+      filter: brightness(1.2) sepia(1) hue-rotate(320deg) saturate(9) drop-shadow(0 0 8px rgba(255, 30, 30, 0.95));
     }
     @keyframes chunkFly {
       0% {
         opacity: 1;
         transform: translate(0, 0) rotate(0deg) scale(1);
       }
-      70% {
-        opacity: 0.8;
-        transform: translate(var(--cx), var(--cy)) rotate(var(--cr)) scale(0.7);
+      60% {
+        opacity: 0.9;
+        transform: translate(var(--cx), var(--cy)) rotate(var(--cr)) scale(0.85);
       }
       100% {
         opacity: 0;
-        transform: translate(var(--cx), calc(var(--cy) + 60px)) rotate(var(--cr)) scale(0.3);
+        transform: translate(calc(var(--cx) * 1.3), calc(var(--cy) + 90px)) rotate(calc(var(--cr) * 1.5)) scale(0.2);
       }
     }
     /* Laser buy button style */
@@ -422,8 +451,7 @@
     <div class="laser-cps-text" id="laserDisplay" style="display:none;">0 lasers (0/s)</div>
   </div>
 
-  <!-- Laser beam element -->
-  <div class="laser-beam" id="laserBeam"></div>
+  <!-- Laser projectile container is dynamically appended to body -->
 
   <script>
     (function () {
@@ -443,7 +471,6 @@
       const buyLaserBtn = document.getElementById('buyLaserBtn');
       const laserCostDisplay = document.getElementById('laserCost');
       const laserDisplay = document.getElementById('laserDisplay');
-      const laserBeam = document.getElementById('laserBeam');
 
       let count = 0;
       let hideTimeout = null;
@@ -467,6 +494,45 @@
       let laserInterval = null;
 
       const messageSection = document.querySelector('.message-section');
+
+      // Local storage persistence
+      const SAVE_KEY = 'zeras_clicker_save';
+      function saveGame() {
+        try {
+          const data = {
+            starCurrency,
+            totalClicksLifetime,
+            autoClickers,
+            laserCount
+          };
+          localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+        } catch (err) {}
+      }
+
+      function loadGame() {
+        try {
+          const saved = localStorage.getItem(SAVE_KEY);
+          if (saved) {
+            const data = JSON.parse(saved);
+            if (typeof data.starCurrency === 'number') starCurrency = Math.max(0, data.starCurrency);
+            if (typeof data.totalClicksLifetime === 'number') totalClicksLifetime = Math.max(0, data.totalClicksLifetime);
+            if (typeof data.autoClickers === 'number') autoClickers = Math.max(0, data.autoClickers);
+            if (typeof data.laserCount === 'number') laserCount = Math.max(0, data.laserCount);
+
+            autoClickerCost = Math.round(autoClickerBaseCost * Math.pow(1.22, autoClickers));
+            laserCurrentCost = Math.round(laserBaseCost * Math.pow(1.35, laserCount));
+
+            if (autoClickers > 0) startAutoClickerLoop();
+            if (laserCount > 0) startLaserLoop();
+
+            if (totalClicksLifetime >= 50) {
+              centerPopupOnViewport();
+              popup.classList.remove('fade-out');
+              popup.classList.add('show');
+            }
+          }
+        } catch (err) {}
+      }
 
       // Position the star at the center of the current viewport (as absolute inside message-section)
       function centerPopupOnViewport() {
@@ -494,6 +560,7 @@
         laserCostDisplay.textContent = laserCurrentCost;
         laserDisplay.textContent = `${laserCount} lasers (${laserCount * 10}/s)`;
         buyLaserBtn.disabled = starCurrency < laserCurrentCost;
+        saveGame();
       }
 
       function clearStars() {
@@ -679,51 +746,64 @@
         performStarClick(true);
       });
 
-      // --- LASER BEAM LOGIC ---
+      // --- LASGUN BEAM & SHOT LOGIC ---
       function fireLaser() {
-        // Get the star's position on screen
+        if (!popup.classList.contains('show')) return;
+
+        // Target: random point on the visible star
         const popupRect = popup.getBoundingClientRect();
-        const starCenterX = popupRect.left + popupRect.width / 2;
-        const starCenterY = popupRect.top + popupRect.height / 2;
+        // Star bounds roughly in the center 60% of popupRect
+        const offsetX = (Math.random() - 0.5) * (popupRect.width * 0.55);
+        const offsetY = (Math.random() - 0.5) * (popupRect.height * 0.55);
+        const targetX = popupRect.left + popupRect.width / 2 + offsetX;
+        const targetY = popupRect.top + popupRect.height / 2 + offsetY;
 
-        // Laser origin: bottom-right area
-        const laserOriginX = window.innerWidth - 32;
-        const laserOriginY = window.innerHeight;
+        // Random origin in the bottom right corner of the screen
+        const startX = window.innerWidth - (15 + Math.random() * 110);
+        const startY = window.innerHeight - (5 + Math.random() * 85);
 
-        // Calculate angle and distance
-        const dx = starCenterX - laserOriginX;
-        const dy = starCenterY - laserOriginY;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        const angle = Math.atan2(dx, -dy); // angle from bottom
+        // Angle for bolt rotation
+        const dx = targetX - startX;
+        const dy = targetY - startY;
+        const angleRad = Math.atan2(dy, dx) + Math.PI / 2;
 
-        // Position and rotate the beam
-        laserBeam.style.height = distance + 'px';
-        laserBeam.style.right = '2rem';
-        laserBeam.style.transformOrigin = 'bottom center';
-        laserBeam.style.transform = `rotate(${angle}rad)`;
+        // Create high-velocity lasgun bolt
+        const bolt = document.createElement('div');
+        bolt.className = 'lasgun-bolt';
+        bolt.style.setProperty('--startX', `${startX}px`);
+        bolt.style.setProperty('--startY', `${startY}px`);
+        bolt.style.setProperty('--targetX', `${targetX}px`);
+        bolt.style.setProperty('--targetY', `${targetY}px`);
+        bolt.style.setProperty('--angle', `${angleRad}rad`);
 
-        // Fire!
-        laserBeam.classList.remove('fade');
-        laserBeam.classList.add('firing');
+        document.body.appendChild(bolt);
 
-        // Spawn chunks at the star after a brief delay
+        // Flash and chunk hit
         setTimeout(() => {
-          spawnStarChunks(starCenterX, starCenterY);
-          // Add 10 clicks per laser
+          if (bolt.parentNode) bolt.parentNode.removeChild(bolt);
+
+          // Spawn impact flash
+          const flash = document.createElement('div');
+          flash.className = 'laser-impact-flash';
+          flash.style.left = `${targetX}px`;
+          flash.style.top = `${targetY}px`;
+          document.body.appendChild(flash);
+          setTimeout(() => {
+            if (flash.parentNode) flash.parentNode.removeChild(flash);
+          }, 240);
+
+          // Spawn exploding star chunks
+          spawnStarChunks(targetX, targetY);
+
+          // Give +10 clicks per shot
           starCurrency += 10;
           totalClicksLifetime += 10;
           updateClickerUI();
-        }, 80);
-
-        // Fade beam
-        setTimeout(() => {
-          laserBeam.classList.remove('firing');
-          laserBeam.classList.add('fade');
-        }, 200);
+        }, 150);
       }
 
       function spawnStarChunks(cx, cy) {
-        const chunkCount = 5 + Math.floor(Math.random() * 3);
+        const chunkCount = 4 + Math.floor(Math.random() * 4);
         for (let i = 0; i < chunkCount; i++) {
           const chunk = document.createElement('img');
           chunk.src = 'favicon.svg';
@@ -731,28 +811,30 @@
           chunk.style.left = cx + 'px';
           chunk.style.top = cy + 'px';
 
-          // Random direction
-          const flyX = (Math.random() - 0.5) * 200;
-          const flyY = (Math.random() - 0.7) * 180;
-          const flyRot = (Math.random() - 0.5) * 360;
+          // Random scatter velocity
+          const angle = Math.random() * Math.PI * 2;
+          const dist = 40 + Math.random() * 130;
+          const flyX = Math.cos(angle) * dist;
+          const flyY = Math.sin(angle) * dist - 30; // slight upward bias
+          const flyRot = (Math.random() - 0.5) * 540;
 
           chunk.style.setProperty('--cx', flyX + 'px');
           chunk.style.setProperty('--cy', flyY + 'px');
           chunk.style.setProperty('--cr', flyRot + 'deg');
-          chunk.style.animation = `chunkFly ${(0.6 + Math.random() * 0.4).toFixed(2)}s ease-out forwards`;
+          chunk.style.animation = `chunkFly ${(0.55 + Math.random() * 0.35).toFixed(2)}s cubic-bezier(0.2, 0.8, 0.4, 1) forwards`;
 
           document.body.appendChild(chunk);
 
           setTimeout(() => {
             if (chunk.parentNode) chunk.parentNode.removeChild(chunk);
-          }, 1200);
+          }, 950);
         }
       }
 
       function startLaserLoop() {
         if (laserInterval) clearInterval(laserInterval);
         if (laserCount <= 0) return;
-        // Each laser fires once per second
+        // Each laser fires once per second staggered evenly
         laserInterval = setInterval(() => {
           for (let i = 0; i < laserCount; i++) {
             setTimeout(() => {
@@ -772,6 +854,10 @@
           updateClickerUI();
         }
       });
+
+      // Load cached game progress from browser memory on initialization
+      loadGame();
+      updateClickerUI();
     })();
   </script>
 </body>
