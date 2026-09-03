@@ -243,23 +243,39 @@
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
     }
-    .clicker-buy-btn:hover:not(:disabled) {
-      background: rgba(95, 0, 0, 0.98);
-      border-color: #ff3333;
-      transform: scale(1.05);
-      box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
+    /* Animated auto-clicking mouse cursor */
+    .flying-clicker-mouse {
+      position: fixed;
+      width: 28px;
+      height: 28px;
+      pointer-events: none;
+      z-index: 10000;
+      fill: #ff2a2a;
+      filter: drop-shadow(0 0 8px rgba(255, 0, 0, 0.95));
+      animation: flyAndClick 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
-    .clicker-buy-btn:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-      border-color: rgba(255, 255, 255, 0.2);
-      color: #888;
-    }
-    .clicker-cps-text {
-      font-size: 18px;
-      color: rgba(255, 170, 170, 0.85);
-      letter-spacing: 1px;
-      margin-top: -0.2rem;
+    @keyframes flyAndClick {
+      0% {
+        opacity: 0;
+        transform: translate(-90px, 45px) rotate(-28deg) scale(0.7);
+      }
+      35% {
+        opacity: 0.95;
+        transform: translate(-30px, 15px) rotate(-15deg) scale(1);
+      }
+      65% {
+        /* Click press near the inner left edge of the star */
+        opacity: 1;
+        transform: translate(-10px, 0px) rotate(-5deg) scale(0.85);
+      }
+      80% {
+        opacity: 0.8;
+        transform: translate(-14px, -5px) rotate(0deg) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-25px, -15px) rotate(10deg) scale(0.65);
+      }
     }
   </style>
 </head>
@@ -364,6 +380,32 @@
         }, 2200);
       }
 
+      function spawnFlyingMouse() {
+        const mouse = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        mouse.setAttribute('viewBox', '0 0 24 24');
+        mouse.classList.add('flying-clicker-mouse');
+
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', 'M12 2C8.69 2 6 4.69 6 8v8c0 3.31 2.69 6 6 6s6-2.69 6-6V8c0-3.31-2.69-6-6-6zm4 14c0 2.21-1.79 4-4 4s-4-1.79-4-4v-3h8v3zm0-5H8V8c0-2.21 1.79-4 4-4s4 1.79 4 4v3zm-5-5v3H9V6c0-.55.45-1 1-1s1 .45 1 1z');
+        mouse.appendChild(path);
+
+        // Position slightly to the inner left of the center star
+        const rect = popup.getBoundingClientRect();
+        const targetX = rect.left + rect.width * 0.18 + (Math.random() * 16 - 8);
+        const targetY = rect.top + rect.height * 0.48 + (Math.random() * 24 - 12);
+
+        mouse.style.left = targetX + 'px';
+        mouse.style.top = targetY + 'px';
+
+        document.body.appendChild(mouse);
+
+        setTimeout(() => {
+          if (mouse.parentNode) {
+            mouse.parentNode.removeChild(mouse);
+          }
+        }, 800);
+      }
+
       function spawnMiniStars(amount) {
         if (starsContainer.children.length > 45) return;
 
@@ -400,6 +442,9 @@
             spamClicks = 1;
           }
           lastClickTime = now;
+        } else {
+          // Trigger visual flying mouse click on auto-click
+          spawnFlyingMouse();
         }
 
         // Star scale logic:
@@ -472,7 +517,10 @@
           if (!autoClickInterval) {
             autoClickInterval = setInterval(() => {
               for (let i = 0; i < autoClickers; i++) {
-                performStarClick(false);
+                // Stagger multiple auto-clickers slightly for a natural effect
+                setTimeout(() => {
+                  performStarClick(false);
+                }, (1000 / autoClickers) * i);
               }
             }, 1000);
           }
