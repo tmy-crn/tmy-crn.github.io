@@ -83,9 +83,9 @@
       align-items: center;
       justify-content: flex-end;
       width: 100%;
-      min-height: 52vh;
-      min-height: 52dvh;
-      padding: 1.5rem 1.5rem clamp(2rem, 5vh, 3.5rem) 1.5rem;
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding: 1.5rem 1.5rem clamp(2.5rem, 6vh, 4.5rem) 1.5rem;
       text-align: center;
     }
     .message-text {
@@ -97,8 +97,21 @@
       cursor: pointer;
       user-select: none;
       -webkit-user-select: none;
+      transition: color 0.4s ease, transform 0.2s ease;
     }
-    /* Star popup centered in the message-section (not fixed to the screen viewport) */
+    .message-text.rumble {
+      animation: textShake 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+      color: #ff3333;
+      text-shadow: 0 0 20px rgba(255, 0, 0, 0.9), 0 0 35px rgba(255, 0, 0, 0.6);
+    }
+    @keyframes textShake {
+      10%, 90% { transform: translate3d(-2px, 0, 0) scale(1.04); }
+      20%, 80% { transform: translate3d(3px, -1px, 0) scale(1.06); }
+      30%, 50%, 70% { transform: translate3d(-5px, 2px, 0) scale(1.08); }
+      40%, 60% { transform: translate3d(5px, -2px, 0) scale(1.08); }
+      100% { transform: translate3d(0, 0, 0) scale(1); }
+    }
+    /* Star popup centered in the bottom 100vh section (not fixed to screen, dead center when scrolled to bottom) */
     .popup-overlay {
       position: absolute;
       top: 50%;
@@ -365,6 +378,8 @@
       let autoClickerCost = 100;
       let autoClickInterval = null;
 
+      let hasTriggeredClickerMode = false;
+
       function updateClickerUI() {
         countDisplay.textContent = Math.floor(totalStarClicks);
         costDisplay.textContent = autoClickerCost;
@@ -374,6 +389,17 @@
         if (totalStarClicks >= 50) {
           clickerHud.classList.add('active');
           clickerHud.removeAttribute('aria-hidden');
+
+          if (!hasTriggeredClickerMode) {
+            hasTriggeredClickerMode = true;
+            text.classList.remove('rumble');
+            // Force DOM reflow so animation re-triggers
+            void text.offsetWidth;
+            text.classList.add('rumble');
+            setTimeout(() => {
+              text.classList.remove('rumble');
+            }, 800);
+          }
         }
       }
 
