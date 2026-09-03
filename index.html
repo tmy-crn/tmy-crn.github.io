@@ -178,6 +178,87 @@
         transform: translate(-50%, -50%) scale(0.1) rotate(calc(var(--rot, 20deg) * 2));
       }
     }
+    /* Clicker UI in bottom right */
+    .clicker-hud {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.6rem;
+      opacity: 0;
+      transform: translateY(15px);
+      pointer-events: none;
+      transition: opacity 0.6s ease, transform 0.6s ease;
+      font-family: 'Jacquard 12', 'Times New Roman', serif;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .clicker-hud.active {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    .clicker-counter {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(15, 0, 0, 0.75);
+      border: 1px solid rgba(255, 30, 30, 0.4);
+      padding: 0.4rem 0.9rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8), 0 0 12px rgba(255, 0, 0, 0.3);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .clicker-mouse-icon {
+      width: 20px;
+      height: 20px;
+      fill: #ff3333;
+      filter: drop-shadow(0 0 5px rgba(255, 0, 0, 0.8));
+    }
+    .clicker-count-text {
+      font-size: 26px;
+      color: #fff;
+      letter-spacing: 1px;
+      text-shadow: 0 0 10px rgba(255, 50, 50, 0.8);
+    }
+    .clicker-buy-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(30, 0, 0, 0.85);
+      border: 1px solid rgba(255, 50, 50, 0.5);
+      color: #ffcccc;
+      padding: 0.4rem 0.8rem;
+      border-radius: 8px;
+      font-family: 'Jacquard 12', 'Times New Roman', serif;
+      font-size: 18px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
+      transition: all 0.2s ease;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+    .clicker-buy-btn:hover:not(:disabled) {
+      background: rgba(80, 0, 0, 0.95);
+      border-color: #ff2222;
+      transform: scale(1.04);
+      box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+    }
+    .clicker-buy-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      border-color: rgba(255, 255, 255, 0.15);
+      color: #888;
+    }
+    .clicker-cps-text {
+      font-size: 14px;
+      color: rgba(255, 150, 150, 0.7);
+      margin-top: -0.2rem;
+    }
   </style>
 </head>
 <body>
@@ -210,6 +291,20 @@
     <img src="favicon.svg" id="popupImg" alt="zeras star" />
   </div>
 
+  <!-- Clicker HUD in right corner -->
+  <div class="clicker-hud" id="clickerHud" aria-hidden="true">
+    <div class="clicker-counter">
+      <svg class="clicker-mouse-icon" viewBox="0 0 24 24">
+        <path d="M12 2C8.69 2 6 4.69 6 8v8c0 3.31 2.69 6 6 6s6-2.69 6-6V8c0-3.31-2.69-6-6-6zm4 14c0 2.21-1.79 4-4 4s-4-1.79-4-4v-3h8v3zm0-5H8V8c0-2.21 1.79-4 4-4s4 1.79 4 4v3zm-5-5v3H9V6c0-.55.45-1 1-1s1 .45 1 1z"/>
+      </svg>
+      <span class="clicker-count-text" id="starCountDisplay">0</span>
+    </div>
+    <button class="clicker-buy-btn" id="buyClickerBtn">
+      <span>+1 Mouse (<span id="autoClickerCost">100</span>)</span>
+    </button>
+    <div class="clicker-cps-text" id="cpsDisplay">0 clickers (0/s)</div>
+  </div>
+
   <script>
     (function () {
       const text = document.getElementById('loveText');
@@ -218,36 +313,65 @@
       const vignette = document.getElementById('vignetteOverlay');
       const starsContainer = document.getElementById('miniStarsContainer');
 
+      const clickerHud = document.getElementById('clickerHud');
+      const countDisplay = document.getElementById('starCountDisplay');
+      const buyBtn = document.getElementById('buyClickerBtn');
+      const costDisplay = document.getElementById('autoClickerCost');
+      const cpsDisplay = document.getElementById('cpsDisplay');
+
       let count = 0;
       let hideTimeout = null;
       let isRotated = false;
       let spamClicks = 0;
       let lastClickTime = 0;
 
+      // Clicker stats
+      let totalStarClicks = 0;
+      let currentDeg = 0;
+      let autoClickers = 0;
+      let autoClickerBaseCost = 100;
+      let autoClickerCost = 100;
+      let autoClickInterval = null;
+
+      function updateClickerUI() {
+        countDisplay.textContent = Math.floor(totalStarClicks);
+        costDisplay.textContent = autoClickerCost;
+        cpsDisplay.textContent = `${autoClickers} mouse clickers (${autoClickers}/s)`;
+        buyBtn.disabled = totalStarClicks < autoClickerCost;
+
+        if (totalStarClicks >= 50) {
+          clickerHud.classList.add('active');
+          clickerHud.removeAttribute('aria-hidden');
+        }
+      }
+
       function clearStars() {
         starsContainer.innerHTML = '';
         vignette.style.opacity = '0';
         spamClicks = 0;
+        // Keep HUD visible if reached 50, but hide popup
       }
 
       function scheduleFadeOut() {
         clearTimeout(hideTimeout);
+        // If the player unlocked auto-clickers or 50+ clicks, star remains open longer/alive
         hideTimeout = setTimeout(() => {
-          popup.classList.remove('show');
-          popup.classList.add('fade-out');
-          clearStars();
-        }, 2000);
+          if (autoClickers === 0 && totalStarClicks < 50) {
+            popup.classList.remove('show');
+            popup.classList.add('fade-out');
+            clearStars();
+          }
+        }, 2200);
       }
 
       function spawnMiniStars(amount) {
-        // Cap maximum total active mini stars on screen
-        if (starsContainer.children.length > 40) return;
+        if (starsContainer.children.length > 45) return;
 
         for (let i = 0; i < amount; i++) {
           const star = document.createElement('img');
           star.src = 'favicon.svg';
           star.className = 'mini-star';
-          const size = Math.floor(Math.random() * 24) + 18; // 18px to 42px
+          const size = Math.floor(Math.random() * 24) + 18;
           const posX = Math.random() * 92 + 4;
           const posY = Math.random() * 92 + 4;
           const duration = (Math.random() * 1.6 + 1.4).toFixed(2);
@@ -265,40 +389,75 @@
         }
       }
 
+      function performStarClick(isManual = true) {
+        totalStarClicks++;
+        const now = Date.now();
+
+        if (isManual) {
+          if (now - lastClickTime < 1000) {
+            spamClicks++;
+          } else {
+            spamClicks = 1;
+          }
+          lastClickTime = now;
+        }
+
+        // Rotation logic:
+        // Before 20 clicks: toggle between -90deg and 90deg
+        // At 20+ clicks: spin continuously in only one direction (e.g. +90deg every click)
+        if (totalStarClicks < 20) {
+          isRotated = !isRotated;
+          currentDeg = isRotated ? -90 : 90;
+          popupImg.style.transform = `rotate(${currentDeg}deg)`;
+        } else {
+          currentDeg += 90;
+          popupImg.style.transform = `rotate(${currentDeg}deg)`;
+        }
+
+        if (isManual) {
+          const vignetteIntensity = Math.min(spamClicks * 0.12, 0.95);
+          vignette.style.opacity = vignetteIntensity.toString();
+
+          const starsToSpawn = Math.min(2 + Math.floor(spamClicks / 3), 4);
+          spawnMiniStars(starsToSpawn);
+        }
+
+        updateClickerUI();
+        scheduleFadeOut();
+      }
+
+      buyBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (totalStarClicks >= autoClickerCost) {
+          totalStarClicks -= autoClickerCost;
+          autoClickers++;
+          // Exponential scaling for the cost (e.g. 1.18x multiplier)
+          autoClickerCost = Math.round(autoClickerBaseCost * Math.pow(1.22, autoClickers));
+
+          if (!autoClickInterval) {
+            autoClickInterval = setInterval(() => {
+              for (let i = 0; i < autoClickers; i++) {
+                performStarClick(false);
+              }
+            }, 1000);
+          }
+
+          updateClickerUI();
+        }
+      });
+
       text.addEventListener('click', () => {
         count++;
         if (count === 10) {
           count = 0;
-          isRotated = false;
-          popupImg.style.transform = 'rotate(0deg)';
           popup.classList.remove('fade-out');
           popup.classList.add('show');
-          clearStars();
           scheduleFadeOut();
         }
       });
 
       popup.addEventListener('click', () => {
-        const now = Date.now();
-        if (now - lastClickTime < 1000) {
-          spamClicks++;
-        } else {
-          spamClicks = 1;
-        }
-        lastClickTime = now;
-
-        isRotated = !isRotated;
-        popupImg.style.transform = isRotated ? 'rotate(-90deg)' : 'rotate(90deg)';
-
-        // Intensify red vignette based on spam clicks
-        const vignetteIntensity = Math.min(spamClicks * 0.15, 0.95);
-        vignette.style.opacity = vignetteIntensity.toString();
-
-        // Spawn a balanced amount of stars (2-4 per click)
-        const starsToSpawn = Math.min(2 + Math.floor(spamClicks / 3), 4);
-        spawnMiniStars(starsToSpawn);
-
-        scheduleFadeOut();
+        performStarClick(true);
       });
     })();
   </script>
