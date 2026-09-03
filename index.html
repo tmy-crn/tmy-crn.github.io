@@ -139,7 +139,7 @@
       z-index: 9990;
       opacity: 0;
       background: radial-gradient(circle at center, transparent 35%, rgba(180, 0, 0, 0.75) 100%);
-      transition: opacity 0.5s ease;
+      transition: opacity 1.6s cubic-bezier(0.22, 1, 0.36, 1);
     }
     /* Mini shining stars container */
     .mini-stars-container {
@@ -236,12 +236,12 @@
           popup.classList.remove('show');
           popup.classList.add('fade-out');
           clearStars();
-        }, 1800);
+        }, 2000);
       }
 
       function spawnMiniStars(amount) {
-        // Cap maximum total active mini stars on screen to keep it clean
-        if (starsContainer.children.length > 25) return;
+        // Cap maximum total active mini stars on screen
+        if (starsContainer.children.length > 40) return;
 
         for (let i = 0; i < amount; i++) {
           const star = document.createElement('img');
@@ -294,8 +294,8 @@
         const vignetteIntensity = Math.min(spamClicks * 0.15, 0.95);
         vignette.style.opacity = vignetteIntensity.toString();
 
-        // Spawn fewer stars (1-2 per click)
-        const starsToSpawn = Math.min(1 + Math.floor(spamClicks / 4), 2);
+        // Spawn a balanced amount of stars (2-4 per click)
+        const starsToSpawn = Math.min(2 + Math.floor(spamClicks / 3), 4);
         spawnMiniStars(starsToSpawn);
 
         scheduleFadeOut();
