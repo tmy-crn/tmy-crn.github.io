@@ -422,6 +422,190 @@
       letter-spacing: 1px;
       margin-top: -0.2rem;
     }
+    .i-dot {
+      cursor: pointer;
+      display: inline-block;
+      transition: color 0.2s ease, text-shadow 0.2s ease;
+    }
+    .i-dot:hover {
+      color: #ff3333;
+      text-shadow: 0 0 10px rgba(255, 0, 0, 0.9);
+    }
+    /* Star bounce animation on hit/click */
+    @keyframes starBounceAnim {
+      0% { transform: scale(var(--base-scale, 1)) rotate(var(--base-rot, 0deg)); }
+      35% { transform: scale(calc(var(--base-scale, 1) * 0.88)) rotate(var(--base-rot, 0deg)); }
+      70% { transform: scale(calc(var(--base-scale, 1) * 1.08)) rotate(var(--base-rot, 0deg)); }
+      100% { transform: scale(var(--base-scale, 1)) rotate(var(--base-rot, 0deg)); }
+    }
+    .popup-overlay img#popupImg.bouncing {
+      animation: starBounceAnim 0.18s ease-out forwards;
+    }
+    /* Pixelated Lasgun tracer */
+    .lasgun-tracer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 5px;
+      background: repeating-linear-gradient(
+        to top,
+        #ffffff 0px,
+        #ffffff 4px,
+        #ff2233 4px,
+        #ff2233 8px,
+        #bb0011 8px,
+        #bb0011 12px
+      );
+      image-rendering: pixelated;
+      border-radius: 0;
+      z-index: 100;
+      pointer-events: none;
+      transform-origin: top center;
+      box-shadow:
+        0 0 6px 2px #ffffff,
+        0 0 14px 4px #ff0022,
+        0 0 24px 6px rgba(255, 0, 0, 0.6);
+      animation: lasgunFlash 0.2s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+    }
+    /* Eye Slash and Icon Styles */
+    .eye-slash-line {
+      position: fixed;
+      z-index: 10005;
+      pointer-events: none;
+      height: 6px;
+      background: #ffffff;
+      border-radius: 2px;
+      box-shadow:
+        0 0 8px 3px #ffffff,
+        0 0 20px 6px #ff1133,
+        0 0 35px 10px rgba(255, 0, 0, 0.9);
+      animation: eyeSlashAnim 0.28s ease-out forwards;
+      transform-origin: center center;
+    }
+    @keyframes eyeSlashAnim {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) rotate(var(--slash-angle, -35deg)) scaleX(0.1);
+      }
+      30% {
+        opacity: 1;
+        transform: translate(-50%, -50%) rotate(var(--slash-angle, -35deg)) scaleX(1.2);
+      }
+      70% {
+        opacity: 0.9;
+        transform: translate(-50%, -50%) rotate(var(--slash-angle, -35deg)) scaleX(1.3);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) rotate(var(--slash-angle, -35deg)) scaleX(1.4);
+      }
+    }
+    .eye-buy-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: rgba(45, 0, 10, 0.92);
+      border: 1.5px solid rgba(255, 60, 100, 0.65);
+      color: #ffe6eb;
+      padding: 0.6rem 1.1rem;
+      border-radius: 10px;
+      font-family: 'Jacquard 12', 'Times New Roman', serif;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.8);
+      transition: all 0.2s ease;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .eye-buy-btn:hover:not(:disabled) {
+      background: rgba(110, 0, 30, 0.98);
+      border-color: #ff3366;
+      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(255, 30, 80, 0.7);
+    }
+    .eye-buy-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      border-color: rgba(255, 255, 255, 0.2);
+      color: #888;
+    }
+    .eye-cps-text {
+      font-size: 24px;
+      color: rgba(255, 140, 170, 0.85);
+      letter-spacing: 1px;
+      margin-top: -0.2rem;
+    }
+    /* Reset Confirmation Modal */
+    .reset-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.78);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 100000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .reset-modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .reset-modal-box {
+      background: rgba(20, 0, 0, 0.95);
+      border: 2px solid #ff2233;
+      border-radius: 14px;
+      padding: 1.8rem 2.2rem;
+      text-align: center;
+      max-width: 380px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9), 0 0 25px rgba(255, 0, 0, 0.5);
+      font-family: 'Jacquard 12', 'Times New Roman', serif;
+    }
+    .reset-modal-title {
+      font-size: 32px;
+      color: #fff;
+      margin-bottom: 0.8rem;
+      text-shadow: 0 0 12px rgba(255, 40, 40, 0.9);
+    }
+    .reset-modal-desc {
+      font-size: 20px;
+      color: rgba(255, 200, 200, 0.8);
+      margin-bottom: 1.5rem;
+    }
+    .reset-modal-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+    }
+    .reset-confirm-btn, .reset-cancel-btn {
+      font-family: 'Jacquard 12', 'Times New Roman', serif;
+      font-size: 22px;
+      padding: 0.5rem 1.4rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .reset-confirm-btn {
+      background: #880000;
+      border: 1.5px solid #ff3333;
+      color: #fff;
+    }
+    .reset-confirm-btn:hover {
+      background: #cc0000;
+      box-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
+    }
+    .reset-cancel-btn {
+      background: rgba(40, 40, 40, 0.8);
+      border: 1.5px solid rgba(255, 255, 255, 0.3);
+      color: #ccc;
+    }
+    .reset-cancel-btn:hover {
+      background: rgba(70, 70, 70, 0.9);
+      color: #fff;
+    }
   </style>
 </head>
 <body>
@@ -436,7 +620,7 @@
         </clipPath>
       </defs>
       <a href="https://discord.gg/zJE2NZjqwx" xlink:href="https://discord.gg/zJE2NZjqwx"
-         target="_top" aria-label="zeras — join the Discord">
+         target="_blank" rel="noopener noreferrer" aria-label="zeras — join the Discord">
         <image href="red.jpg" xlink:href="red.jpg" x="0" y="0" width="800" height="240"
                preserveAspectRatio="xMidYMid slice" clip-path="url(#zclip)" />
       </a>
@@ -447,7 +631,7 @@
     <div class="popup-overlay" id="faviconPopup" aria-hidden="true">
       <img src="favicon.svg" id="popupImg" alt="zeras star" />
     </div>
-    <p class="message-text" id="loveText">i love you all</p>
+    <p class="message-text" id="loveText"><span id="iDot" class="i-dot">i</span> love you all</p>
   </section>
 
   <div class="vignette-overlay" id="vignetteOverlay" aria-hidden="true"></div>
@@ -467,9 +651,41 @@
       <span>+1 laser (<span id="laserCost">1000</span>)</span>
     </button>
     <div class="laser-cps-text" id="laserDisplay" style="display:none;">0 lasers (0/s)</div>
+    <button class="eye-buy-btn" id="buyEyeBtn" style="display:none;">
+      <svg width="24" height="24" viewBox="0 0 16 16" style="image-rendering:pixelated; flex-shrink:0;">
+        <rect x="5" y="3" width="6" height="1" fill="#ff4466"/>
+        <rect x="3" y="4" width="2" height="1" fill="#ff4466"/>
+        <rect x="11" y="4" width="2" height="1" fill="#ff4466"/>
+        <rect x="2" y="5" width="1" height="2" fill="#ff4466"/>
+        <rect x="13" y="5" width="1" height="2" fill="#ff4466"/>
+        <rect x="1" y="7" width="1" height="2" fill="#ff2244"/>
+        <rect x="14" y="7" width="1" height="2" fill="#ff2244"/>
+        <rect x="2" y="9" width="1" height="2" fill="#cc0022"/>
+        <rect x="13" y="9" width="1" height="2" fill="#cc0022"/>
+        <rect x="3" y="11" width="2" height="1" fill="#990011"/>
+        <rect x="11" y="11" width="2" height="1" fill="#990011"/>
+        <rect x="5" y="12" width="6" height="1" fill="#990011"/>
+        <rect x="4" y="5" width="8" height="6" fill="#ffe6eb"/>
+        <rect x="6" y="6" width="4" height="4" fill="#ff0033"/>
+        <rect x="7" y="7" width="2" height="2" fill="#220005"/>
+        <rect x="8" y="7" width="1" height="1" fill="#ffffff"/>
+      </svg>
+      <span>+1 eye (<span id="eyeCost">7500</span>)</span>
+    </button>
+    <div class="eye-cps-text" id="eyeDisplay" style="display:none;">0 eyes (0/s)</div>
   </div>
 
-  <!-- Laser projectile container is dynamically appended to body -->
+  <!-- Reset Confirmation Modal -->
+  <div class="reset-modal-overlay" id="resetModal" aria-hidden="true">
+    <div class="reset-modal-box">
+      <h2 class="reset-modal-title">reset progress?</h2>
+      <p class="reset-modal-desc">this will clear your clicks, upgrades, and stats completely.</p>
+      <div class="reset-modal-actions">
+        <button class="reset-confirm-btn" id="confirmResetBtn">yes, reset</button>
+        <button class="reset-cancel-btn" id="cancelResetBtn">cancel</button>
+      </div>
+    </div>
+  </div>
 
   <script>
     (function () {
@@ -489,6 +705,19 @@
       const buyLaserBtn = document.getElementById('buyLaserBtn');
       const laserCostDisplay = document.getElementById('laserCost');
       const laserDisplay = document.getElementById('laserDisplay');
+
+      // Eye refs
+      const buyEyeBtn = document.getElementById('buyEyeBtn');
+      const eyeCostDisplay = document.getElementById('eyeCost');
+      const eyeDisplay = document.getElementById('eyeDisplay');
+
+      // Reset modal refs & i-dot
+      const iDot = document.getElementById('iDot');
+      const resetModal = document.getElementById('resetModal');
+      const confirmResetBtn = document.getElementById('confirmResetBtn');
+      const cancelResetBtn = document.getElementById('cancelResetBtn');
+      let iDotClicks = 0;
+      let iDotTimer = null;
 
       let count = 0;
       let hideTimeout = null;
@@ -511,7 +740,29 @@
       let laserCurrentCost = 1000;
       let laserInterval = null;
 
+      // Eye state
+      let eyeCount = 0;
+      let eyeBaseCost = 7500;
+      let eyeCurrentCost = 7500;
+      let eyeInterval = null;
+
       const messageSection = document.querySelector('.message-section');
+
+      // Star bounce animation trigger
+      function triggerStarBounce() {
+        // Set CSS custom properties for base-scale and base-rot
+        let currentScale = 1.0;
+        if (totalClicksLifetime >= 50 && totalClicksLifetime < 100) {
+          const progress = (totalClicksLifetime - 50) / 50;
+          currentScale = 1.0 + (progress * 0.55);
+        }
+        popupImg.style.setProperty('--base-scale', currentScale);
+        popupImg.style.setProperty('--base-rot', `${currentDeg}deg`);
+
+        popupImg.classList.remove('bouncing');
+        void popupImg.offsetWidth; // force DOM reflow
+        popupImg.classList.add('bouncing');
+      }
 
       // Local storage persistence
       const SAVE_KEY = 'zeras_clicker_save';
@@ -521,7 +772,8 @@
             starCurrency,
             totalClicksLifetime,
             autoClickers,
-            laserCount
+            laserCount,
+            eyeCount
           };
           localStorage.setItem(SAVE_KEY, JSON.stringify(data));
         } catch (err) {}
@@ -536,14 +788,17 @@
             if (typeof data.totalClicksLifetime === 'number') totalClicksLifetime = Math.max(0, data.totalClicksLifetime);
             if (typeof data.autoClickers === 'number') autoClickers = Math.max(0, data.autoClickers);
             if (typeof data.laserCount === 'number') laserCount = Math.max(0, data.laserCount);
+            if (typeof data.eyeCount === 'number') eyeCount = Math.max(0, data.eyeCount);
 
             autoClickerCost = Math.round(autoClickerBaseCost * Math.pow(1.22, autoClickers));
             laserCurrentCost = Math.round(laserBaseCost * Math.pow(1.35, laserCount));
+            eyeCurrentCost = Math.round(eyeBaseCost * Math.pow(1.35, eyeCount));
 
             if (autoClickers > 0) startAutoClickerLoop();
             if (laserCount > 0) startLaserLoop();
+            if (eyeCount > 0) startEyeLoop();
 
-            if (totalClicksLifetime >= 50) {
+            if (totalClicksLifetime >= 100) {
               centerPopupOnViewport();
               popup.classList.remove('fade-out');
               popup.classList.add('show');
@@ -551,6 +806,45 @@
           }
         } catch (err) {}
       }
+
+      // Reset modal handling
+      function openResetModal() {
+        resetModal.classList.add('open');
+        resetModal.removeAttribute('aria-hidden');
+      }
+      function closeResetModal() {
+        resetModal.classList.remove('open');
+        resetModal.setAttribute('aria-hidden', 'true');
+      }
+      confirmResetBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        try {
+          localStorage.removeItem(SAVE_KEY);
+        } catch (err) {}
+        location.reload();
+      });
+      cancelResetBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeResetModal();
+      });
+      resetModal.addEventListener('click', (e) => {
+        if (e.target === resetModal) closeResetModal();
+      });
+
+      // Triple click on i-dot to trigger reset confirmation
+      iDot.addEventListener('click', (e) => {
+        e.stopPropagation();
+        iDotClicks++;
+        clearTimeout(iDotTimer);
+        if (iDotClicks >= 3) {
+          iDotClicks = 0;
+          openResetModal();
+        } else {
+          iDotTimer = setTimeout(() => {
+            iDotClicks = 0;
+          }, 600);
+        }
+      });
 
       // Position the star at the center of the current viewport (as absolute inside message-section)
       function centerPopupOnViewport() {
@@ -565,7 +859,8 @@
         cpsDisplay.textContent = `${autoClickers} mouse clickers (${autoClickers}/s)`;
         buyBtn.disabled = starCurrency < autoClickerCost;
 
-        if (totalClicksLifetime >= 50) {
+        // Clicker HUD game unlocks at 100 clicks
+        if (totalClicksLifetime >= 100) {
           clickerHud.classList.add('active');
           clickerHud.removeAttribute('aria-hidden');
         }
@@ -578,6 +873,16 @@
         laserCostDisplay.textContent = laserCurrentCost;
         laserDisplay.textContent = `${laserCount} lasers (${laserCount * 10}/s)`;
         buyLaserBtn.disabled = starCurrency < laserCurrentCost;
+
+        // Show eye button once player hits 7500 lifetime clicks
+        if (totalClicksLifetime >= 7500) {
+          buyEyeBtn.style.display = '';
+          eyeDisplay.style.display = '';
+        }
+        eyeCostDisplay.textContent = eyeCurrentCost;
+        eyeDisplay.textContent = `${eyeCount} eyes (${eyeCount * 50}/s)`;
+        buyEyeBtn.disabled = starCurrency < eyeCurrentCost;
+
         saveGame();
       }
 
@@ -590,7 +895,7 @@
       function scheduleFadeOut() {
         clearTimeout(hideTimeout);
         hideTimeout = setTimeout(() => {
-          if (autoClickers === 0 && totalClicksLifetime < 50) {
+          if (autoClickers === 0 && laserCount === 0 && eyeCount === 0 && totalClicksLifetime < 100) {
             popup.classList.remove('show');
             popup.classList.add('fade-out');
             clearStars();
@@ -667,12 +972,12 @@
           scheduleSpreeDecay();
 
           // Star scale logic (manual clicks only):
-          // Clicks < 20: 1.0x
-          // Clicks 20 -> 50: Grows smoothly from 1.0x up to 1.55x
-          // Clicks >= 50: Locks at 1.0x (normal clicker mode)
+          // Clicks < 50: 1.0x
+          // Clicks 50 -> 100: Grows smoothly from 1.0x up to 1.55x
+          // Clicks >= 100: Locks at 1.0x (game start)
           let currentScale = 1.0;
-          if (totalClicksLifetime >= 20 && totalClicksLifetime < 50) {
-            const progress = (totalClicksLifetime - 20) / 30;
+          if (totalClicksLifetime >= 50 && totalClicksLifetime < 100) {
+            const progress = (totalClicksLifetime - 50) / 50;
             currentScale = 1.0 + (progress * 0.55);
           } else {
             currentScale = 1.0;
@@ -682,21 +987,21 @@
           let spinSpeed = 0.35;
           let easing = 'cubic-bezier(0.34, 1.56, 0.64, 1)';
 
-          if (totalClicksLifetime >= 50) {
+          if (totalClicksLifetime >= 100) {
             const spreeFactor = Math.min(spamClicks / 10, 1);
             spinSpeed = 0.65 - (spreeFactor * 0.50);
             easing = 'cubic-bezier(0.25, 1, 0.5, 1)';
-          } else if (totalClicksLifetime >= 20) {
-            const progress = (totalClicksLifetime - 20) / 30;
+          } else if (totalClicksLifetime >= 50) {
+            const progress = (totalClicksLifetime - 50) / 50;
             spinSpeed = 0.35 - (progress * 0.23);
           }
 
           popupImg.style.transition = `transform ${spinSpeed.toFixed(3)}s ${easing}`;
 
           // Rotation logic:
-          // In initial stage (< 20 clicks): wiggles between -90deg and 90deg
-          // In stage 2 & clicker mode (>= 20 clicks): always spins forward (+90deg)
-          if (totalClicksLifetime < 20) {
+          // In initial stage (< 50 clicks): wiggles between -90deg and 90deg
+          // At 50 clicks and beyond: starts spinning forward continuously (+90deg)
+          if (totalClicksLifetime < 50) {
             isRotated = !isRotated;
             currentDeg = isRotated ? -90 : 90;
           } else {
@@ -705,17 +1010,26 @@
 
           popupImg.style.transform = `scale(${currentScale}) rotate(${currentDeg}deg)`;
 
-          // Vignette on active clicking sprees
-          if (spamClicks >= 2) {
-            const vignetteIntensity = Math.min((spamClicks - 1) * 0.12, 0.95);
-            vignette.style.opacity = vignetteIntensity.toString();
+          // Vignette fades in progressively starting at 50 clicks (or during rapid clicking sprees)
+          let vignetteIntensity = 0;
+          if (totalClicksLifetime >= 50) {
+            const baseVignette = Math.min((totalClicksLifetime - 50) / 100, 0.75);
+            const spreeBonus = spamClicks >= 2 ? Math.min((spamClicks - 1) * 0.08, 0.25) : 0;
+            vignetteIntensity = Math.min(baseVignette + spreeBonus, 0.95);
+          } else if (spamClicks >= 2) {
+            vignetteIntensity = Math.min((spamClicks - 1) * 0.12, 0.6);
           }
+          vignette.style.opacity = vignetteIntensity.toString();
+
+          // Small bounce reaction on star
+          triggerStarBounce();
 
           const starsToSpawn = Math.min(2 + Math.floor(spamClicks / 3), 4);
           spawnMiniStars(starsToSpawn);
         } else {
           // Auto-clicker triggers the flying click animation on the star without spinning it
           spawnFlyingMouse();
+          triggerStarBounce();
         }
 
         updateClickerUI();
@@ -775,18 +1089,27 @@
         const targetX = popupRect.left + popupRect.width / 2 + offsetX;
         const targetY = popupRect.top + popupRect.height / 2 + offsetY;
 
-        // Random origin in the bottom right corner of the screen
-        const startX = window.innerWidth - (15 + Math.random() * 110);
-        const startY = window.innerHeight - (5 + Math.random() * 85);
+        // Multiple spawn positions strictly OUTSIDE the viewport near bottom right
+        // Origin choice: 0 = past the bottom edge, 1 = past the right edge
+        let startX, startY;
+        if (Math.random() < 0.55) {
+          // Off-screen along bottom edge
+          startX = window.innerWidth - (10 + Math.random() * 260);
+          startY = window.innerHeight + 25 + Math.random() * 25;
+        } else {
+          // Off-screen along right edge
+          startX = window.innerWidth + 25 + Math.random() * 25;
+          startY = window.innerHeight - (10 + Math.random() * 200);
+        }
 
         // Vector calculation from origin (startX, startY) to target (targetX, targetY)
         const dx = targetX - startX;
         const dy = targetY - startY;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        // Angle pointing downward along length
+        // Angle pointing along length
         const angleRad = Math.atan2(dy, dx) - Math.PI / 2;
 
-        // Spawn muzzle flash at bottom right origin
+        // Spawn muzzle flash at the off-screen origin
         const muzzle = document.createElement('div');
         muzzle.className = 'lasgun-muzzle-flash';
         muzzle.style.left = `${startX}px`;
@@ -796,7 +1119,7 @@
           if (muzzle.parentNode) muzzle.parentNode.removeChild(muzzle);
         }, 120);
 
-        // Create high-energy lasgun beam tracer connecting origin to target
+        // Create pixelated high-energy lasgun beam tracer (z-index 100 sits behind HUD buttons)
         const tracer = document.createElement('div');
         tracer.className = 'lasgun-tracer';
         tracer.style.height = `${dist}px`;
@@ -821,6 +1144,9 @@
           // Spawn exploding star chunks
           spawnStarChunks(targetX, targetY);
 
+          // Bounce star on laser impact
+          triggerStarBounce();
+
           // Give +10 clicks per shot
           starCurrency += 10;
           totalClicksLifetime += 10;
@@ -830,7 +1156,7 @@
         // Remove tracer after animation finishes
         setTimeout(() => {
           if (tracer.parentNode) tracer.parentNode.removeChild(tracer);
-        }, 220);
+        }, 200);
       }
 
       function spawnStarChunks(cx, cy) {
@@ -875,6 +1201,55 @@
         }, 1000);
       }
 
+      // --- EYE SWORD SLASH BUFF LOGIC (7500 clicks, +50 clicks per slash) ---
+      function fireEyeSlash() {
+        if (!popup.classList.contains('show')) return;
+
+        const popupRect = popup.getBoundingClientRect();
+        const starCenterX = popupRect.left + popupRect.width / 2;
+        const starCenterY = popupRect.top + popupRect.height / 2;
+
+        // Create razor-sharp eye sword slash across the star
+        const slash = document.createElement('div');
+        slash.className = 'eye-slash-line';
+        const slashWidth = Math.max(popupRect.width * 1.5, 200);
+        slash.style.width = `${slashWidth}px`;
+        slash.style.left = `${starCenterX}px`;
+        slash.style.top = `${starCenterY}px`;
+
+        // Vary slash angle slightly like a dynamic sword slash
+        const angle = -45 + (Math.random() * 30 - 15);
+        slash.style.setProperty('--slash-angle', `${angle}deg`);
+
+        document.body.appendChild(slash);
+
+        // Star bounce and chunks on slash contact
+        setTimeout(() => {
+          triggerStarBounce();
+          spawnStarChunks(starCenterX, starCenterY);
+          starCurrency += 50;
+          totalClicksLifetime += 50;
+          updateClickerUI();
+        }, 80);
+
+        setTimeout(() => {
+          if (slash.parentNode) slash.parentNode.removeChild(slash);
+        }, 320);
+      }
+
+      function startEyeLoop() {
+        if (eyeInterval) clearInterval(eyeInterval);
+        if (eyeCount <= 0) return;
+        // Each eye slashes once per second staggered evenly
+        eyeInterval = setInterval(() => {
+          for (let i = 0; i < eyeCount; i++) {
+            setTimeout(() => {
+              fireEyeSlash();
+            }, (1000 / eyeCount) * i);
+          }
+        }, 1000);
+      }
+
       buyLaserBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         if (starCurrency >= laserCurrentCost) {
@@ -882,6 +1257,17 @@
           laserCount++;
           laserCurrentCost = Math.round(laserBaseCost * Math.pow(1.35, laserCount));
           startLaserLoop();
+          updateClickerUI();
+        }
+      });
+
+      buyEyeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (starCurrency >= eyeCurrentCost) {
+          starCurrency -= eyeCurrentCost;
+          eyeCount++;
+          eyeCurrentCost = Math.round(eyeBaseCost * Math.pow(1.35, eyeCount));
+          startEyeLoop();
           updateClickerUI();
         }
       });
