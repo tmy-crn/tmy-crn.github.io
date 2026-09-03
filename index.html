@@ -293,55 +293,73 @@
         transform: translate(-10px, -8px) rotate(8deg) scale(0.7);
       }
     }
-    /* Lasgun bolt projectile */
-    .lasgun-bolt {
+    /* Lasgun firing muzzle flash */
+    .lasgun-muzzle-flash {
       position: fixed;
-      width: 5px;
-      height: 48px;
-      background: #ffffff;
-      border-radius: 4px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #ffffff 20%, #ff1133 60%, transparent 100%);
+      transform: translate(-50%, -50%);
+      z-index: 10002;
+      pointer-events: none;
+      box-shadow: 0 0 20px 8px rgba(255, 0, 50, 0.9);
+      animation: muzzleAnim 0.12s ease-out forwards;
+    }
+    @keyframes muzzleAnim {
+      0% { opacity: 1; transform: translate(-50%, -50%) scale(1.4); }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+    }
+    /* Lasgun high-energy beam tracer */
+    .lasgun-tracer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 4px;
+      background: linear-gradient(to top, rgba(255, 0, 50, 0) 0%, #ff2244 25%, #ffffff 85%, #ffffff 100%);
+      border-radius: 3px;
       z-index: 10001;
       pointer-events: none;
-      transform-origin: center bottom;
+      transform-origin: top center;
       box-shadow:
-        0 0 8px 3px #ffffff,
-        0 0 18px 6px #ff0033,
-        0 0 35px 12px rgba(255, 0, 0, 0.85);
-      animation: lasgunFly 0.16s linear forwards;
+        0 0 6px 2px #ffffff,
+        0 0 16px 5px #ff0033,
+        0 0 28px 8px rgba(255, 0, 0, 0.7);
+      animation: lasgunFlash 0.22s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
     }
-    @keyframes lasgunFly {
+    @keyframes lasgunFlash {
       0% {
-        opacity: 1;
-        transform: translate(var(--startX), var(--startY)) rotate(var(--angle)) scaleY(0.6);
+        opacity: 0;
+        transform: translate(var(--startX), var(--startY)) rotate(var(--angle)) scaleY(0.1);
       }
-      20% {
+      25% {
         opacity: 1;
-        transform: translate(calc(var(--startX) + (var(--targetX) - var(--startX)) * 0.25), calc(var(--startY) + (var(--targetY) - var(--startY)) * 0.25)) rotate(var(--angle)) scaleY(1.3);
+        transform: translate(var(--startX), var(--startY)) rotate(var(--angle)) scaleY(1);
       }
-      90% {
-        opacity: 1;
-        transform: translate(calc(var(--startX) + (var(--targetX) - var(--startX)) * 0.95), calc(var(--startY) + (var(--targetY) - var(--startY)) * 0.95)) rotate(var(--angle)) scaleY(1.3);
+      65% {
+        opacity: 0.9;
+        transform: translate(var(--startX), var(--startY)) rotate(var(--angle)) scaleY(1);
       }
       100% {
         opacity: 0;
-        transform: translate(var(--targetX), var(--targetY)) rotate(var(--angle)) scaleY(0.4);
+        transform: translate(var(--startX), var(--startY)) rotate(var(--angle)) scaleY(1);
       }
     }
     /* Lasgun impact flash on star */
     .laser-impact-flash {
       position: fixed;
-      width: 36px;
-      height: 36px;
+      width: 42px;
+      height: 42px;
       border-radius: 50%;
-      background: radial-gradient(circle, #ffffff 15%, #ff2222 55%, rgba(255, 0, 0, 0) 100%);
+      background: radial-gradient(circle, #ffffff 25%, #ff1133 60%, rgba(255, 0, 0, 0) 100%);
       transform: translate(-50%, -50%) scale(0.4);
       z-index: 10003;
       pointer-events: none;
-      box-shadow: 0 0 25px 10px rgba(255, 20, 20, 0.9);
-      animation: impactFlashAnim 0.22s ease-out forwards;
+      box-shadow: 0 0 30px 12px rgba(255, 20, 20, 0.95);
+      animation: impactFlashAnim 0.24s ease-out forwards;
     }
     @keyframes impactFlashAnim {
-      0% { opacity: 1; transform: translate(-50%, -50%) scale(0.5); }
+      0% { opacity: 1; transform: translate(-50%, -50%) scale(0.6); }
       50% { opacity: 1; transform: translate(-50%, -50%) scale(1.6); }
       100% { opacity: 0; transform: translate(-50%, -50%) scale(2.2); }
     }
@@ -752,7 +770,6 @@
 
         // Target: random point on the visible star
         const popupRect = popup.getBoundingClientRect();
-        // Star bounds roughly in the center 60% of popupRect
         const offsetX = (Math.random() - 0.5) * (popupRect.width * 0.55);
         const offsetY = (Math.random() - 0.5) * (popupRect.height * 0.55);
         const targetX = popupRect.left + popupRect.width / 2 + offsetX;
@@ -762,26 +779,35 @@
         const startX = window.innerWidth - (15 + Math.random() * 110);
         const startY = window.innerHeight - (5 + Math.random() * 85);
 
-        // Angle for bolt rotation
+        // Vector calculation from origin (startX, startY) to target (targetX, targetY)
         const dx = targetX - startX;
         const dy = targetY - startY;
-        const angleRad = Math.atan2(dy, dx) + Math.PI / 2;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        // Angle pointing downward along length
+        const angleRad = Math.atan2(dy, dx) - Math.PI / 2;
 
-        // Create high-velocity lasgun bolt
-        const bolt = document.createElement('div');
-        bolt.className = 'lasgun-bolt';
-        bolt.style.setProperty('--startX', `${startX}px`);
-        bolt.style.setProperty('--startY', `${startY}px`);
-        bolt.style.setProperty('--targetX', `${targetX}px`);
-        bolt.style.setProperty('--targetY', `${targetY}px`);
-        bolt.style.setProperty('--angle', `${angleRad}rad`);
-
-        document.body.appendChild(bolt);
-
-        // Flash and chunk hit
+        // Spawn muzzle flash at bottom right origin
+        const muzzle = document.createElement('div');
+        muzzle.className = 'lasgun-muzzle-flash';
+        muzzle.style.left = `${startX}px`;
+        muzzle.style.top = `${startY}px`;
+        document.body.appendChild(muzzle);
         setTimeout(() => {
-          if (bolt.parentNode) bolt.parentNode.removeChild(bolt);
+          if (muzzle.parentNode) muzzle.parentNode.removeChild(muzzle);
+        }, 120);
 
+        // Create high-energy lasgun beam tracer connecting origin to target
+        const tracer = document.createElement('div');
+        tracer.className = 'lasgun-tracer';
+        tracer.style.height = `${dist}px`;
+        tracer.style.setProperty('--startX', `${startX}px`);
+        tracer.style.setProperty('--startY', `${startY}px`);
+        tracer.style.setProperty('--angle', `${angleRad}rad`);
+
+        document.body.appendChild(tracer);
+
+        // Impact flash and chunk explosion on the star
+        setTimeout(() => {
           // Spawn impact flash
           const flash = document.createElement('div');
           flash.className = 'laser-impact-flash';
@@ -799,7 +825,12 @@
           starCurrency += 10;
           totalClicksLifetime += 10;
           updateClickerUI();
-        }, 150);
+        }, 40);
+
+        // Remove tracer after animation finishes
+        setTimeout(() => {
+          if (tracer.parentNode) tracer.parentNode.removeChild(tracer);
+        }, 220);
       }
 
       function spawnStarChunks(cx, cy) {
