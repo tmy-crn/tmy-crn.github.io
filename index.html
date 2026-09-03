@@ -98,10 +98,9 @@
       user-select: none;
       -webkit-user-select: none;
     }
-    /* Star popup centered on the screen viewport, hidden by JS when hero is visible */
+    /* Star popup: absolute inside message-section, JS sets top to viewport-center on appear */
     .popup-overlay {
-      position: fixed;
-      top: 50%;
+      position: absolute;
       left: 50%;
       transform: translate(-50%, -50%) scale(0.6);
       width: clamp(140px, 35vw, 240px);
@@ -366,6 +365,15 @@
       let autoClickerCost = 100;
       let autoClickInterval = null;
 
+      const messageSection = document.querySelector('.message-section');
+
+      // Position the star at the center of the current viewport (as absolute inside message-section)
+      function centerPopupOnViewport() {
+        const viewportCenterY = window.scrollY + window.innerHeight / 2;
+        const sectionTop = messageSection.offsetTop;
+        popup.style.top = (viewportCenterY - sectionTop) + 'px';
+      }
+
       function updateClickerUI() {
         countDisplay.textContent = Math.floor(starCurrency);
         costDisplay.textContent = autoClickerCost;
@@ -550,6 +558,7 @@
         count++;
         if (count === 10) {
           count = 0;
+          centerPopupOnViewport();
           popup.classList.remove('fade-out');
           popup.classList.add('show');
           scheduleFadeOut();
