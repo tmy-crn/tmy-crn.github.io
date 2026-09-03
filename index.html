@@ -648,7 +648,7 @@
     </button>
     <div class="clicker-cps-text" id="cpsDisplay">0 clickers (0/s)</div>
     <button class="laser-buy-btn" id="buyLaserBtn" style="display:none;">
-      <span>+1 laser (<span id="laserCost">1000</span>)</span>
+      <span>+1 laser (<span id="laserCost">1200</span>)</span>
     </button>
     <div class="laser-cps-text" id="laserDisplay" style="display:none;">0 lasers (0/s)</div>
     <button class="eye-buy-btn" id="buyEyeBtn" style="display:none;">
@@ -729,18 +729,21 @@
       let starCurrency = 0;
       let totalClicksLifetime = 0;
       let currentDeg = 0;
+
+      // Balance curves (Cookie Clicker standard: ~1.15x cost multiplier per tier)
+      // Tier 1: Mouse cursor (+1 click/s) - Base cost 100
       let autoClickers = 0;
       let autoClickerBaseCost = 100;
       let autoClickerCost = 100;
       let autoClickInterval = null;
 
-      // Laser state
+      // Tier 2: Lasgun beam (+12 clicks/s) - Base cost 1200, unlocks at 1000
       let laserCount = 0;
-      let laserBaseCost = 1000;
-      let laserCurrentCost = 1000;
+      let laserBaseCost = 1200;
+      let laserCurrentCost = 1200;
       let laserInterval = null;
 
-      // Eye state
+      // Tier 3: Eye sword slash (+65 clicks/s) - Base cost 7500, unlocks at 7500
       let eyeCount = 0;
       let eyeBaseCost = 7500;
       let eyeCurrentCost = 7500;
@@ -790,9 +793,9 @@
             if (typeof data.laserCount === 'number') laserCount = Math.max(0, data.laserCount);
             if (typeof data.eyeCount === 'number') eyeCount = Math.max(0, data.eyeCount);
 
-            autoClickerCost = Math.round(autoClickerBaseCost * Math.pow(1.22, autoClickers));
-            laserCurrentCost = Math.round(laserBaseCost * Math.pow(1.35, laserCount));
-            eyeCurrentCost = Math.round(eyeBaseCost * Math.pow(1.35, eyeCount));
+            autoClickerCost = Math.round(autoClickerBaseCost * Math.pow(1.15, autoClickers));
+            laserCurrentCost = Math.round(laserBaseCost * Math.pow(1.15, laserCount));
+            eyeCurrentCost = Math.round(eyeBaseCost * Math.pow(1.15, eyeCount));
 
             if (autoClickers > 0) startAutoClickerLoop();
             if (laserCount > 0) startLaserLoop();
@@ -871,7 +874,7 @@
           laserDisplay.style.display = '';
         }
         laserCostDisplay.textContent = laserCurrentCost;
-        laserDisplay.textContent = `${laserCount} lasers (${laserCount * 10}/s)`;
+        laserDisplay.textContent = `${laserCount} lasers (${laserCount * 12}/s)`;
         buyLaserBtn.disabled = starCurrency < laserCurrentCost;
 
         // Show eye button once player hits 7500 lifetime clicks
@@ -880,7 +883,7 @@
           eyeDisplay.style.display = '';
         }
         eyeCostDisplay.textContent = eyeCurrentCost;
-        eyeDisplay.textContent = `${eyeCount} eyes (${eyeCount * 50}/s)`;
+        eyeDisplay.textContent = `${eyeCount} eyes (${eyeCount * 65}/s)`;
         buyEyeBtn.disabled = starCurrency < eyeCurrentCost;
 
         saveGame();
@@ -1053,7 +1056,7 @@
         if (starCurrency >= autoClickerCost) {
           starCurrency -= autoClickerCost;
           autoClickers++;
-          autoClickerCost = Math.round(autoClickerBaseCost * Math.pow(1.22, autoClickers));
+          autoClickerCost = Math.round(autoClickerBaseCost * Math.pow(1.15, autoClickers));
           startAutoClickerLoop();
           updateClickerUI();
         }
@@ -1147,9 +1150,9 @@
           // Bounce star on laser impact
           triggerStarBounce();
 
-          // Give +10 clicks per shot
-          starCurrency += 10;
-          totalClicksLifetime += 10;
+          // Give +12 clicks per shot (rebalanced from +10)
+          starCurrency += 12;
+          totalClicksLifetime += 12;
           updateClickerUI();
         }, 40);
 
@@ -1201,7 +1204,7 @@
         }, 1000);
       }
 
-      // --- EYE SWORD SLASH BUFF LOGIC (7500 clicks, +50 clicks per slash) ---
+      // --- EYE SWORD SLASH BUFF LOGIC (7500 clicks, +65 clicks per slash) ---
       function fireEyeSlash() {
         if (!popup.classList.contains('show')) return;
 
@@ -1227,8 +1230,9 @@
         setTimeout(() => {
           triggerStarBounce();
           spawnStarChunks(starCenterX, starCenterY);
-          starCurrency += 50;
-          totalClicksLifetime += 50;
+          // Give +65 clicks per slash (rebalanced from +50)
+          starCurrency += 65;
+          totalClicksLifetime += 65;
           updateClickerUI();
         }, 80);
 
@@ -1255,7 +1259,7 @@
         if (starCurrency >= laserCurrentCost) {
           starCurrency -= laserCurrentCost;
           laserCount++;
-          laserCurrentCost = Math.round(laserBaseCost * Math.pow(1.35, laserCount));
+          laserCurrentCost = Math.round(laserBaseCost * Math.pow(1.15, laserCount));
           startLaserLoop();
           updateClickerUI();
         }
@@ -1266,7 +1270,7 @@
         if (starCurrency >= eyeCurrentCost) {
           starCurrency -= eyeCurrentCost;
           eyeCount++;
-          eyeCurrentCost = Math.round(eyeBaseCost * Math.pow(1.35, eyeCount));
+          eyeCurrentCost = Math.round(eyeBaseCost * Math.pow(1.15, eyeCount));
           startEyeLoop();
           updateClickerUI();
         }
