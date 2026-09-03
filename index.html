@@ -98,10 +98,10 @@
       user-select: none;
       -webkit-user-select: none;
     }
-    /* Star popup centered in the space right above the bottom text */
+    /* Star popup centered on the screen viewport, hidden by JS when hero is visible */
     .popup-overlay {
-      position: absolute;
-      top: 32%;
+      position: fixed;
+      top: 50%;
       left: 50%;
       transform: translate(-50%, -50%) scale(0.6);
       width: clamp(140px, 35vw, 240px);
@@ -559,6 +559,20 @@
       popup.addEventListener('click', () => {
         performStarClick(true);
       });
+
+      // Hide the fixed star when scrolling back up to hero section
+      const hero = document.querySelector('.hero');
+      function checkScrollVisibility() {
+        const heroBottom = hero.getBoundingClientRect().bottom;
+        // If hero bottom is still visible on screen (user hasn't fully scrolled past it)
+        if (heroBottom > 80) {
+          popup.style.visibility = 'hidden';
+        } else {
+          popup.style.visibility = '';
+        }
+      }
+      window.addEventListener('scroll', checkScrollVisibility, { passive: true });
+      checkScrollVisibility();
     })();
   </script>
 </body>
