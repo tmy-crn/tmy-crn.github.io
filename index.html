@@ -181,13 +181,13 @@
     /* Clicker UI in bottom right */
     .clicker-hud {
       position: fixed;
-      bottom: 1.5rem;
-      right: 1.5rem;
+      bottom: 2rem;
+      right: 2rem;
       z-index: 9999;
       display: flex;
       flex-direction: column;
       align-items: flex-end;
-      gap: 0.6rem;
+      gap: 0.8rem;
       opacity: 0;
       transform: translateY(15px);
       pointer-events: none;
@@ -204,59 +204,61 @@
     .clicker-counter {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      background: rgba(15, 0, 0, 0.75);
-      border: 1px solid rgba(255, 30, 30, 0.4);
-      padding: 0.4rem 0.9rem;
-      border-radius: 8px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8), 0 0 12px rgba(255, 0, 0, 0.3);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      gap: 0.75rem;
+      background: rgba(15, 0, 0, 0.82);
+      border: 1.5px solid rgba(255, 40, 40, 0.55);
+      padding: 0.6rem 1.25rem;
+      border-radius: 12px;
+      box-shadow: 0 6px 25px rgba(0, 0, 0, 0.85), 0 0 16px rgba(255, 0, 0, 0.4);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
     }
     .clicker-mouse-icon {
-      width: 20px;
-      height: 20px;
+      width: 30px;
+      height: 30px;
       fill: #ff3333;
-      filter: drop-shadow(0 0 5px rgba(255, 0, 0, 0.8));
+      filter: drop-shadow(0 0 7px rgba(255, 0, 0, 0.9));
     }
     .clicker-count-text {
-      font-size: 26px;
+      font-size: 38px;
       color: #fff;
-      letter-spacing: 1px;
-      text-shadow: 0 0 10px rgba(255, 50, 50, 0.8);
+      letter-spacing: 2px;
+      text-shadow: 0 0 12px rgba(255, 50, 50, 0.9);
+      line-height: 1;
     }
     .clicker-buy-btn {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      background: rgba(30, 0, 0, 0.85);
-      border: 1px solid rgba(255, 50, 50, 0.5);
-      color: #ffcccc;
-      padding: 0.4rem 0.8rem;
-      border-radius: 8px;
+      gap: 0.6rem;
+      background: rgba(35, 0, 0, 0.9);
+      border: 1.5px solid rgba(255, 60, 60, 0.6);
+      color: #ffe6e6;
+      padding: 0.6rem 1.1rem;
+      border-radius: 10px;
       font-family: 'Jacquard 12', 'Times New Roman', serif;
-      font-size: 18px;
+      font-size: 24px;
       cursor: pointer;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.8);
       transition: all 0.2s ease;
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
     }
     .clicker-buy-btn:hover:not(:disabled) {
-      background: rgba(80, 0, 0, 0.95);
-      border-color: #ff2222;
-      transform: scale(1.04);
-      box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+      background: rgba(95, 0, 0, 0.98);
+      border-color: #ff3333;
+      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
     }
     .clicker-buy-btn:disabled {
-      opacity: 0.5;
+      opacity: 0.45;
       cursor: not-allowed;
-      border-color: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.2);
       color: #888;
     }
     .clicker-cps-text {
-      font-size: 14px;
-      color: rgba(255, 150, 150, 0.7);
+      font-size: 18px;
+      color: rgba(255, 170, 170, 0.85);
+      letter-spacing: 1px;
       margin-top: -0.2rem;
     }
   </style>
@@ -349,12 +351,10 @@
         starsContainer.innerHTML = '';
         vignette.style.opacity = '0';
         spamClicks = 0;
-        // Keep HUD visible if reached 50, but hide popup
       }
 
       function scheduleFadeOut() {
         clearTimeout(hideTimeout);
-        // If the player unlocked auto-clickers or 50+ clicks, star remains open longer/alive
         hideTimeout = setTimeout(() => {
           if (autoClickers === 0 && totalStarClicks < 50) {
             popup.classList.remove('show');
@@ -402,17 +402,31 @@
           lastClickTime = now;
         }
 
+        // Progression from 20 to 50 clicks:
+        // Scale grows from 1.0 up to 1.55x
+        // Spin speed (transition duration) speeds up from 0.35s down to 0.12s
+        let currentScale = 1.0;
+        let spinSpeed = 0.35;
+
+        if (totalStarClicks >= 20) {
+          const progress = Math.min((totalStarClicks - 20) / 30, 1); // 0 at 20, 1 at 50+
+          currentScale = 1.0 + (progress * 0.55); // 1.0 -> 1.55
+          spinSpeed = 0.35 - (progress * 0.23);   // 0.35s -> 0.12s (faster)
+        }
+
+        popupImg.style.transition = `transform ${spinSpeed.toFixed(3)}s cubic-bezier(0.34, 1.56, 0.64, 1)`;
+
         // Rotation logic:
         // Before 20 clicks: toggle between -90deg and 90deg
-        // At 20+ clicks: spin continuously in only one direction (e.g. +90deg every click)
+        // At 20+ clicks: spin continuously in one direction (+90deg per click)
         if (totalStarClicks < 20) {
           isRotated = !isRotated;
           currentDeg = isRotated ? -90 : 90;
-          popupImg.style.transform = `rotate(${currentDeg}deg)`;
         } else {
           currentDeg += 90;
-          popupImg.style.transform = `rotate(${currentDeg}deg)`;
         }
+
+        popupImg.style.transform = `scale(${currentScale}) rotate(${currentDeg}deg)`;
 
         if (isManual) {
           const vignetteIntensity = Math.min(spamClicks * 0.12, 0.95);
@@ -431,7 +445,6 @@
         if (totalStarClicks >= autoClickerCost) {
           totalStarClicks -= autoClickerCost;
           autoClickers++;
-          // Exponential scaling for the cost (e.g. 1.18x multiplier)
           autoClickerCost = Math.round(autoClickerBaseCost * Math.pow(1.22, autoClickers));
 
           if (!autoClickInterval) {
