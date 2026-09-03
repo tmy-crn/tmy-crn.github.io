@@ -394,7 +394,7 @@
         const now = Date.now();
 
         if (isManual) {
-          if (now - lastClickTime < 1000) {
+          if (now - lastClickTime < 800) {
             spamClicks++;
           } else {
             spamClicks = 1;
@@ -402,23 +402,40 @@
           lastClickTime = now;
         }
 
-        // Progression from 20 to 50 clicks:
-        // Scale grows from 1.0 up to 1.55x
-        // Spin speed (transition duration) speeds up from 0.35s down to 0.12s
+        // Star scale logic:
+        // Clicks < 20: 1.0x
+        // Clicks 20 -> 50: Grows smoothly from 1.0x up to 1.55x
+        // Clicks 50+: Transitions back down to normal 1.0x
         let currentScale = 1.0;
-        let spinSpeed = 0.35;
-
-        if (totalStarClicks >= 20) {
-          const progress = Math.min((totalStarClicks - 20) / 30, 1); // 0 at 20, 1 at 50+
-          currentScale = 1.0 + (progress * 0.55); // 1.0 -> 1.55
-          spinSpeed = 0.35 - (progress * 0.23);   // 0.35s -> 0.12s (faster)
+        if (totalStarClicks >= 20 && totalStarClicks < 50) {
+          const progress = (totalStarClicks - 20) / 30; // 0 to 1
+          currentScale = 1.0 + (progress * 0.55);
+        } else {
+          currentScale = 1.0;
         }
 
-        popupImg.style.transition = `transform ${spinSpeed.toFixed(3)}s cubic-bezier(0.34, 1.56, 0.64, 1)`;
+        // Spin speed & smoothness logic:
+        // When 50+ clicks (cookie clicker active):
+        // Base spin speed is slower and buttery smooth (0.65s).
+        // During clicking spree (spamClicks > 1), it gradually speeds up down to 0.15s.
+        // Before 50 clicks: transition from 0.35s down to 0.12s during buildup.
+        let spinSpeed = 0.35;
+        let easing = 'cubic-bezier(0.34, 1.56, 0.64, 1)';
+
+        if (totalStarClicks >= 50) {
+          const spreeFactor = Math.min(spamClicks / 10, 1); // 0 (idle/slow) -> 1 (fast spree)
+          spinSpeed = 0.65 - (spreeFactor * 0.50); // 0.65s (slow & smooth) -> 0.15s (fast spree)
+          easing = 'cubic-bezier(0.25, 1, 0.5, 1)';
+        } else if (totalStarClicks >= 20) {
+          const progress = (totalStarClicks - 20) / 30;
+          spinSpeed = 0.35 - (progress * 0.23);
+        }
+
+        popupImg.style.transition = `transform ${spinSpeed.toFixed(3)}s ${easing}`;
 
         // Rotation logic:
         // Before 20 clicks: toggle between -90deg and 90deg
-        // At 20+ clicks: spin continuously in one direction (+90deg per click)
+        // At 20+ clicks: continuous single-direction spin (+90deg per click)
         if (totalStarClicks < 20) {
           isRotated = !isRotated;
           currentDeg = isRotated ? -90 : 90;
@@ -429,8 +446,13 @@
         popupImg.style.transform = `scale(${currentScale}) rotate(${currentDeg}deg)`;
 
         if (isManual) {
-          const vignetteIntensity = Math.min(spamClicks * 0.12, 0.95);
-          vignette.style.opacity = vignetteIntensity.toString();
+          // Vignette only appears on active clicking sprees (when clicking rapidly >= 2 clicks)
+          if (spamClicks >= 2) {
+            const vignetteIntensity = Math.min((spamClicks - 1) * 0.12, 0.95);
+            vignette.style.opacity = vignetteIntensity.toString();
+          } else {
+            vignette.style.opacity = '0';
+          }
 
           const starsToSpawn = Math.min(2 + Math.floor(spamClicks / 3), 4);
           spawnMiniStars(starsToSpawn);
@@ -458,6 +480,10 @@
           updateClickerUI();
         }
       });
+
+      // Prevent wheel/touch scrolling on the popup so it doesn't trigger page scrolls
+      popup.addEventListener('wheel', (e) => e.preventDefault(), { passive: false });
+      popup.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
 
       text.addEventListener('click', () => {
         count++;
