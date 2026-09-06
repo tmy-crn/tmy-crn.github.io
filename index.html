@@ -586,18 +586,22 @@
       position: fixed;
       pointer-events: none;
       z-index: 10006;
-      transform: translate(-50%, -50%);
       width: 0;
       height: 0;
+      top: 0;
+      left: 0;
     }
     .pixel-hand {
       position: absolute;
       top: 0;
       left: 0;
-      width: 100px;
-      height: 125px;
+      width: 160px;
+      height: 130px;
+      margin-left: -80px;
+      margin-top: -65px;
       pointer-events: none;
       image-rendering: pixelated;
+      transform-origin: center center;
     }
     .pixel-hand-left {
       animation: handLeftCrush 0.88s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
@@ -608,58 +612,59 @@
     @keyframes handLeftCrush {
       0% {
         opacity: 0;
-        transform: translate(-170px, -70px) scale(0.25) rotate(-35deg);
+        transform: translate(-180px, 0px) scale(0.2) rotate(-15deg);
         filter: blur(4px) brightness(0.3);
       }
       35% {
         opacity: 0.95;
-        transform: translate(-110px, -65px) scale(1.18) rotate(-20deg);
-        filter: blur(0px) brightness(1) drop-shadow(0 0 15px rgba(255, 0, 30, 0.8));
+        transform: translate(-90px, 0px) scale(1.15) rotate(-8deg);
+        filter: blur(0px) brightness(1) drop-shadow(0 0 15px rgba(255, 255, 255, 0.6));
       }
       50% {
-        /* CRUSH impact */
+        /* CRUSH impact right against the star */
         opacity: 1;
-        transform: translate(-32px, -65px) scale(1.0) rotate(8deg);
-        filter: drop-shadow(0 0 25px rgba(255, 0, 0, 1));
+        transform: translate(-40px, 0px) scale(1.0) rotate(2deg);
+        filter: drop-shadow(0 0 20px rgba(255, 0, 0, 0.9));
       }
       72% {
         opacity: 0.95;
-        transform: translate(-35px, -65px) scale(1.02) rotate(6deg);
-        filter: drop-shadow(0 0 15px rgba(255, 0, 0, 0.8));
+        transform: translate(-42px, 0px) scale(1.02) rotate(1deg);
+        filter: drop-shadow(0 0 15px rgba(255, 0, 0, 0.7));
       }
       100% {
         /* Fade away into darkness */
         opacity: 0;
-        transform: translate(-70px, -65px) scale(1.15) rotate(-4deg);
-        filter: blur(2px) opacity(0);
+        transform: translate(-80px, 0px) scale(1.15) rotate(-5deg);
+        filter: blur(3px) opacity(0);
       }
     }
     @keyframes handRightCrush {
       0% {
         opacity: 0;
-        transform: translate(170px, -70px) scaleX(-1) scale(0.25) rotate(-35deg);
+        transform: translate(180px, 0px) scaleX(-1) scale(0.2) rotate(-15deg);
         filter: blur(4px) brightness(0.3);
       }
       35% {
         opacity: 0.95;
-        transform: translate(110px, -65px) scaleX(-1) scale(1.18) rotate(-20deg);
-        filter: blur(0px) brightness(1) drop-shadow(0 0 15px rgba(255, 0, 30, 0.8));
+        transform: translate(90px, 0px) scaleX(-1) scale(1.15) rotate(-8deg);
+        filter: blur(0px) brightness(1) drop-shadow(0 0 15px rgba(255, 255, 255, 0.6));
       }
       50% {
-        /* CRUSH impact */
+        /* CRUSH impact right against the star */
         opacity: 1;
-        transform: translate(32px, -65px) scaleX(-1) scale(1.0) rotate(8deg);
-        filter: drop-shadow(0 0 25px rgba(255, 0, 0, 1));
+        transform: translate(40px, 0px) scaleX(-1) scale(1.0) rotate(2deg);
+        filter: drop-shadow(0 0 20px rgba(255, 0, 0, 0.9));
       }
       72% {
         opacity: 0.95;
-        transform: translate(35px, -65px) scaleX(-1) scale(1.02) rotate(6deg);
-        filter: drop-shadow(0 0 15px rgba(255, 0, 0, 0.8));
+        transform: translate(42px, 0px) scaleX(-1) scale(1.02) rotate(1deg);
+        filter: drop-shadow(0 0 15px rgba(255, 0, 0, 0.7));
       }
       100% {
+        /* Fade away into darkness */
         opacity: 0;
-        transform: translate(70px, -65px) scaleX(-1) scale(1.15) rotate(-4deg);
-        filter: blur(2px) opacity(0);
+        transform: translate(80px, 0px) scaleX(-1) scale(1.15) rotate(-5deg);
+        filter: blur(3px) opacity(0);
       }
     }
     /* Star crush squish reaction */
@@ -1544,46 +1549,11 @@
         }, 360);
       }
 
-      const PIXEL_HAND_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 20" shape-rendering="crispEdges" width="100" height="125">
-  <rect x="1" y="15" width="5" height="5" fill="#180003"/>
-  <rect x="2" y="14" width="4" height="6" fill="#2d0006"/>
-  <rect x="3" y="14" width="2" height="6" fill="#ff1a35"/>
-  <rect x="3" y="8" width="7" height="7" fill="#180003"/>
-  <rect x="4" y="9" width="5" height="5" fill="#380008"/>
-  <rect x="5" y="10" width="3" height="3" fill="#660010"/>
-  <rect x="4" y="8" width="6" height="1" fill="#ff1a35"/>
-  <rect x="3" y="9" width="1" height="5" fill="#ff1a35"/>
-  <rect x="2" y="5" width="3" height="4" fill="#180003"/>
-  <rect x="2" y="4" width="2" height="3" fill="#380008"/>
-  <rect x="3" y="3" width="2" height="2" fill="#ff3344"/>
-  <rect x="4" y="2" width="2" height="2" fill="#ffffff"/>
-  <rect x="9" y="5" width="5" height="2" fill="#180003"/>
-  <rect x="10" y="5" width="4" height="2" fill="#380008"/>
-  <rect x="13" y="5" width="2" height="2" fill="#ff1a35"/>
-  <rect x="14" y="6" width="2" height="1" fill="#ffffff"/>
-  <rect x="9" y="8" width="6" height="2" fill="#180003"/>
-  <rect x="10" y="8" width="5" height="2" fill="#380008"/>
-  <rect x="14" y="8" width="2" height="2" fill="#ff1a35"/>
-  <rect x="15" y="9" width="2" height="1" fill="#ffffff"/>
-  <rect x="9" y="11" width="5" height="2" fill="#180003"/>
-  <rect x="10" y="11" width="4" height="2" fill="#380008"/>
-  <rect x="13" y="11" width="2" height="2" fill="#ff1a35"/>
-  <rect x="14" y="12" width="2" height="1" fill="#ffffff"/>
-  <rect x="8" y="14" width="4" height="2" fill="#180003"/>
-  <rect x="9" y="14" width="3" height="2" fill="#380008"/>
-  <rect x="11" y="14" width="2" height="2" fill="#ff1a35"/>
-  <rect x="12" y="15" width="1" height="1" fill="#ffffff"/>
-  <rect x="8" y="6" width="1" height="1" fill="#ff4d66"/>
-  <rect x="8" y="9" width="1" height="1" fill="#ff4d66"/>
-  <rect x="8" y="12" width="1" height="1" fill="#ff4d66"/>
-  <rect x="7" y="15" width="1" height="1" fill="#ff4d66"/>
-</svg>`;
-
       // --- HANDS CRUSH LOGIC (15000 clicks, +200 clicks per crush) ---
       function fireHandsCrush() {
         if (!popup.classList.contains('show') || isPaused) return;
 
-        const popupRect = popup.getBoundingClientRect();
+        const popupRect = popupImg.getBoundingClientRect();
         const starCenterX = popupRect.left + popupRect.width / 2;
         const starCenterY = popupRect.top + popupRect.height / 2;
 
@@ -1598,13 +1568,15 @@
         handsContainer.style.left = `${starCenterX}px`;
         handsContainer.style.top = `${starCenterY}px`;
 
-        const leftHand = document.createElement('div');
+        const leftHand = document.createElement('img');
+        leftHand.src = 'hand.svg';
         leftHand.className = 'pixel-hand pixel-hand-left';
-        leftHand.innerHTML = PIXEL_HAND_SVG;
+        leftHand.alt = 'crushing hand';
 
-        const rightHand = document.createElement('div');
+        const rightHand = document.createElement('img');
+        rightHand.src = 'hand.svg';
         rightHand.className = 'pixel-hand pixel-hand-right';
-        rightHand.innerHTML = PIXEL_HAND_SVG;
+        rightHand.alt = 'crushing hand';
 
         handsContainer.appendChild(leftHand);
         handsContainer.appendChild(rightHand);
