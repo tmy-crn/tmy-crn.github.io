@@ -823,7 +823,7 @@
     </button>
     <div class="eye-cps-text" id="eyeDisplay" style="display:none;">0 eyes (0/s)</div>
     <button class="hands-buy-btn" id="buyHandsBtn" style="display:none;">
-      <span>+1 hands (<span id="handsCost">45000</span>)</span>
+      <span>+1 hands (<span id="handsCost">20000</span>)</span>
     </button>
     <div class="hands-cps-text" id="handsDisplay" style="display:none;">0 hands (0/s)</div>
   </div>
@@ -918,10 +918,10 @@
       let eyeCurrentCost = 7500;
       let eyeInterval = null;
 
-      // Tier 4: Hands crush (+350 clicks/s) - Base cost 45000, unlocks at 35000
+      // Tier 4: Hands crush (+200 clicks/s) - Base cost 20000, unlocks at 15000
       let handsCount = 0;
-      let handsBaseCost = 45000;
-      let handsCurrentCost = 45000;
+      let handsBaseCost = 20000;
+      let handsCurrentCost = 20000;
       let handsInterval = null;
 
       const messageSection = document.querySelector('.message-section');
@@ -1077,7 +1077,7 @@
         buyBtn.disabled = starCurrency < autoClickerCost;
 
         // Total CPS count for bottom left HUD
-        const totalCps = (autoClickers * 1) + (laserCount * 12) + (eyeCount * 65) + (handsCount * 350);
+        const totalCps = (autoClickers * 1) + (laserCount * 12) + (eyeCount * 65) + (handsCount * 200);
         totalCpsDisplay.textContent = `total: ${totalCps} clicks/s`;
 
         // Clicker HUD game unlocks at 100 clicks
@@ -1106,13 +1106,13 @@
         eyeDisplay.textContent = `${eyeCount} eyes (${eyeCount * 65}/s)`;
         buyEyeBtn.disabled = starCurrency < eyeCurrentCost;
 
-        // Show hands button once player hits 35000 lifetime clicks
-        if (totalClicksLifetime >= 35000) {
+        // Show hands button once player hits 15000 lifetime clicks
+        if (totalClicksLifetime >= 15000) {
           buyHandsBtn.style.display = '';
           handsDisplay.style.display = '';
         }
         handsCostDisplay.textContent = handsCurrentCost;
-        handsDisplay.textContent = `${handsCount} hands (${handsCount * 350}/s)`;
+        handsDisplay.textContent = `${handsCount} hands (${handsCount * 200}/s)`;
         buyHandsBtn.disabled = starCurrency < handsCurrentCost;
 
         queueSave();
@@ -1579,7 +1579,7 @@
   <rect x="7" y="15" width="1" height="1" fill="#ff4d66"/>
 </svg>`;
 
-      // --- HANDS CRUSH LOGIC (35000 clicks, +350 clicks per crush) ---
+      // --- HANDS CRUSH LOGIC (15000 clicks, +200 clicks per crush) ---
       function fireHandsCrush() {
         if (!popup.classList.contains('show') || isPaused) return;
 
@@ -1587,8 +1587,8 @@
         const starCenterX = popupRect.left + popupRect.width / 2;
         const starCenterY = popupRect.top + popupRect.height / 2;
 
-        starCurrency += 350;
-        totalClicksLifetime += 350;
+        starCurrency += 200;
+        totalClicksLifetime += 200;
         updateClickerUI();
 
         if (document.hidden) return;
