@@ -546,6 +546,162 @@
       letter-spacing: 1px;
       margin-top: -0.2rem;
     }
+    /* Hands Upgrade - Pixelated Hands Animation & Styles */
+    .hands-buy-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: rgba(35, 0, 0, 0.9);
+      border: 1.5px solid rgba(255, 60, 60, 0.6);
+      color: #ffe6e6;
+      padding: 0.6rem 1.1rem;
+      border-radius: 10px;
+      font-family: 'Jacquard 12', 'Times New Roman', serif;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.8);
+      transition: all 0.2s ease;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .hands-buy-btn:hover:not(:disabled) {
+      background: rgba(95, 0, 0, 0.98);
+      border-color: #ff3333;
+      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
+    }
+    .hands-buy-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      border-color: rgba(255, 255, 255, 0.2);
+      color: #888;
+    }
+    .hands-cps-text {
+      font-size: 24px;
+      color: rgba(255, 170, 170, 0.85);
+      letter-spacing: 1px;
+      margin-top: -0.2rem;
+    }
+    .pixel-hands-container {
+      position: fixed;
+      pointer-events: none;
+      z-index: 10006;
+      transform: translate(-50%, -50%);
+      width: 0;
+      height: 0;
+    }
+    .pixel-hand {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100px;
+      height: 125px;
+      pointer-events: none;
+      image-rendering: pixelated;
+    }
+    .pixel-hand-left {
+      animation: handLeftCrush 0.88s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+    }
+    .pixel-hand-right {
+      animation: handRightCrush 0.88s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+    }
+    @keyframes handLeftCrush {
+      0% {
+        opacity: 0;
+        transform: translate(-170px, -70px) scale(0.25) rotate(-35deg);
+        filter: blur(4px) brightness(0.3);
+      }
+      35% {
+        opacity: 0.95;
+        transform: translate(-110px, -65px) scale(1.18) rotate(-20deg);
+        filter: blur(0px) brightness(1) drop-shadow(0 0 15px rgba(255, 0, 30, 0.8));
+      }
+      50% {
+        /* CRUSH impact */
+        opacity: 1;
+        transform: translate(-32px, -65px) scale(1.0) rotate(8deg);
+        filter: drop-shadow(0 0 25px rgba(255, 0, 0, 1));
+      }
+      72% {
+        opacity: 0.95;
+        transform: translate(-35px, -65px) scale(1.02) rotate(6deg);
+        filter: drop-shadow(0 0 15px rgba(255, 0, 0, 0.8));
+      }
+      100% {
+        /* Fade away into darkness */
+        opacity: 0;
+        transform: translate(-70px, -65px) scale(1.15) rotate(-4deg);
+        filter: blur(2px) opacity(0);
+      }
+    }
+    @keyframes handRightCrush {
+      0% {
+        opacity: 0;
+        transform: translate(170px, -70px) scaleX(-1) scale(0.25) rotate(-35deg);
+        filter: blur(4px) brightness(0.3);
+      }
+      35% {
+        opacity: 0.95;
+        transform: translate(110px, -65px) scaleX(-1) scale(1.18) rotate(-20deg);
+        filter: blur(0px) brightness(1) drop-shadow(0 0 15px rgba(255, 0, 30, 0.8));
+      }
+      50% {
+        /* CRUSH impact */
+        opacity: 1;
+        transform: translate(32px, -65px) scaleX(-1) scale(1.0) rotate(8deg);
+        filter: drop-shadow(0 0 25px rgba(255, 0, 0, 1));
+      }
+      72% {
+        opacity: 0.95;
+        transform: translate(35px, -65px) scaleX(-1) scale(1.02) rotate(6deg);
+        filter: drop-shadow(0 0 15px rgba(255, 0, 0, 0.8));
+      }
+      100% {
+        opacity: 0;
+        transform: translate(70px, -65px) scaleX(-1) scale(1.15) rotate(-4deg);
+        filter: blur(2px) opacity(0);
+      }
+    }
+    /* Star crush squish reaction */
+    @keyframes starCrushAnim {
+      0% {
+        transform: scale(var(--base-scale, 1)) rotate(var(--base-rot, 0deg));
+      }
+      30% {
+        /* Tight horizontal crush squeeze */
+        transform: scale(calc(var(--base-scale, 1) * 0.45), calc(var(--base-scale, 1) * 1.45)) rotate(calc(var(--base-rot, 0deg) - 4deg));
+        filter: drop-shadow(0 0 35px rgba(255, 0, 0, 1)) brightness(1.6);
+      }
+      65% {
+        /* Spring back stretch */
+        transform: scale(calc(var(--base-scale, 1) * 1.25), calc(var(--base-scale, 1) * 0.75)) rotate(calc(var(--base-rot, 0deg) + 3deg));
+      }
+      100% {
+        transform: scale(var(--base-scale, 1)) rotate(var(--base-rot, 0deg));
+      }
+    }
+    .popup-overlay img#popupImg.crushed {
+      animation: starCrushAnim 0.38s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+    }
+    /* Red shockwave from crushing impact */
+    .crush-shockwave {
+      position: fixed;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: 3px solid #ff2244;
+      background: radial-gradient(circle, rgba(255, 0, 40, 0.55) 0%, rgba(255, 0, 0, 0) 70%);
+      transform: translate(-50%, -50%) scale(0.2);
+      z-index: 10003;
+      pointer-events: none;
+      box-shadow: 0 0 25px 8px rgba(255, 0, 30, 0.95);
+      animation: crushWaveAnim 0.35s ease-out forwards;
+    }
+    @keyframes crushWaveAnim {
+      0% { opacity: 1; transform: translate(-50%, -50%) scale(0.3); }
+      50% { opacity: 0.9; }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(3.5); }
+    }
     /* Reset Confirmation Modal */
     .reset-modal-overlay {
       position: fixed;
@@ -666,6 +822,10 @@
       <span>+1 eye (<span id="eyeCost">7500</span>)</span>
     </button>
     <div class="eye-cps-text" id="eyeDisplay" style="display:none;">0 eyes (0/s)</div>
+    <button class="hands-buy-btn" id="buyHandsBtn" style="display:none;">
+      <span>+1 hands (<span id="handsCost">45000</span>)</span>
+    </button>
+    <div class="hands-cps-text" id="handsDisplay" style="display:none;">0 hands (0/s)</div>
   </div>
 
   <!-- Total CPS HUD in bottom left -->
@@ -713,6 +873,11 @@
       const eyeCostDisplay = document.getElementById('eyeCost');
       const eyeDisplay = document.getElementById('eyeDisplay');
 
+      // Hands refs
+      const buyHandsBtn = document.getElementById('buyHandsBtn');
+      const handsCostDisplay = document.getElementById('handsCost');
+      const handsDisplay = document.getElementById('handsDisplay');
+
       // Reset modal refs & i-dot
       const iDot = document.getElementById('iDot');
       const resetModal = document.getElementById('resetModal');
@@ -753,6 +918,12 @@
       let eyeCurrentCost = 7500;
       let eyeInterval = null;
 
+      // Tier 4: Hands crush (+350 clicks/s) - Base cost 45000, unlocks at 35000
+      let handsCount = 0;
+      let handsBaseCost = 45000;
+      let handsCurrentCost = 45000;
+      let handsInterval = null;
+
       const messageSection = document.querySelector('.message-section');
 
       // Star bounce animation trigger (throttled to avoid layout thrashing)
@@ -787,7 +958,8 @@
             totalClicksLifetime,
             autoClickers,
             laserCount,
-            eyeCount
+            eyeCount,
+            handsCount
           };
           localStorage.setItem(SAVE_KEY, JSON.stringify(data));
         } catch (err) {}
@@ -812,14 +984,17 @@
             if (typeof data.autoClickers === 'number') autoClickers = Math.max(0, data.autoClickers);
             if (typeof data.laserCount === 'number') laserCount = Math.max(0, data.laserCount);
             if (typeof data.eyeCount === 'number') eyeCount = Math.max(0, data.eyeCount);
+            if (typeof data.handsCount === 'number') handsCount = Math.max(0, data.handsCount);
 
             autoClickerCost = Math.round(autoClickerBaseCost * Math.pow(1.15, autoClickers));
             laserCurrentCost = Math.round(laserBaseCost * Math.pow(1.15, laserCount));
             eyeCurrentCost = Math.round(eyeBaseCost * Math.pow(1.15, eyeCount));
+            handsCurrentCost = Math.round(handsBaseCost * Math.pow(1.15, handsCount));
 
             if (autoClickers > 0) startAutoClickerLoop();
             if (laserCount > 0) startLaserLoop();
             if (eyeCount > 0) startEyeLoop();
+            if (handsCount > 0) startHandsLoop();
 
             if (totalClicksLifetime >= 100) {
               popup.classList.remove('fade-out');
@@ -835,6 +1010,7 @@
         if (autoClickInterval) { clearInterval(autoClickInterval); autoClickInterval = null; }
         if (laserInterval) { clearInterval(laserInterval); laserInterval = null; }
         if (eyeInterval) { clearInterval(eyeInterval); eyeInterval = null; }
+        if (handsInterval) { clearInterval(handsInterval); handsInterval = null; }
         resetModal.classList.add('open');
         resetModal.removeAttribute('aria-hidden');
       }
@@ -844,6 +1020,7 @@
         if (autoClickers > 0) startAutoClickerLoop();
         if (laserCount > 0) startLaserLoop();
         if (eyeCount > 0) startEyeLoop();
+        if (handsCount > 0) startHandsLoop();
         resetModal.classList.remove('open');
         resetModal.setAttribute('aria-hidden', 'true');
       }
@@ -855,6 +1032,7 @@
         if (autoClickInterval) { clearInterval(autoClickInterval); autoClickInterval = null; }
         if (laserInterval) { clearInterval(laserInterval); laserInterval = null; }
         if (eyeInterval) { clearInterval(eyeInterval); eyeInterval = null; }
+        if (handsInterval) { clearInterval(handsInterval); handsInterval = null; }
         if (hideTimeout) clearTimeout(hideTimeout);
         if (spreeDecayTimer) clearTimeout(spreeDecayTimer);
         if (saveTimeout) clearTimeout(saveTimeout);
@@ -863,6 +1041,7 @@
         autoClickers = 0;
         laserCount = 0;
         eyeCount = 0;
+        handsCount = 0;
         try {
           localStorage.removeItem(SAVE_KEY);
           localStorage.clear();
@@ -898,7 +1077,7 @@
         buyBtn.disabled = starCurrency < autoClickerCost;
 
         // Total CPS count for bottom left HUD
-        const totalCps = (autoClickers * 1) + (laserCount * 12) + (eyeCount * 65);
+        const totalCps = (autoClickers * 1) + (laserCount * 12) + (eyeCount * 65) + (handsCount * 350);
         totalCpsDisplay.textContent = `total: ${totalCps} clicks/s`;
 
         // Clicker HUD game unlocks at 100 clicks
@@ -926,6 +1105,15 @@
         eyeCostDisplay.textContent = eyeCurrentCost;
         eyeDisplay.textContent = `${eyeCount} eyes (${eyeCount * 65}/s)`;
         buyEyeBtn.disabled = starCurrency < eyeCurrentCost;
+
+        // Show hands button once player hits 35000 lifetime clicks
+        if (totalClicksLifetime >= 35000) {
+          buyHandsBtn.style.display = '';
+          handsDisplay.style.display = '';
+        }
+        handsCostDisplay.textContent = handsCurrentCost;
+        handsDisplay.textContent = `${handsCount} hands (${handsCount * 350}/s)`;
+        buyHandsBtn.disabled = starCurrency < handsCurrentCost;
 
         queueSave();
       }
@@ -1316,6 +1504,145 @@
           eyeCount++;
           eyeCurrentCost = Math.round(eyeBaseCost * Math.pow(1.15, eyeCount));
           startEyeLoop();
+          updateClickerUI();
+          saveGame();
+        }
+      });
+
+      // Star crush squish reaction
+      let lastCrushTime = 0;
+      function triggerStarCrush() {
+        const now = performance.now();
+        if (now - lastCrushTime < 180) return;
+        lastCrushTime = now;
+
+        let currentScale = 1.0;
+        if (totalClicksLifetime >= 50 && totalClicksLifetime < 100) {
+          const progress = (totalClicksLifetime - 50) / 50;
+          currentScale = 1.0 + (progress * 0.55);
+        }
+        popupImg.style.setProperty('--base-scale', currentScale);
+        popupImg.style.setProperty('--base-rot', `${currentDeg}deg`);
+
+        popupImg.classList.remove('crushed');
+        void popupImg.offsetWidth; // force DOM reflow
+        popupImg.classList.add('crushed');
+        setTimeout(() => {
+          popupImg.classList.remove('crushed');
+        }, 380);
+      }
+
+      function spawnCrushShockwave(cx, cy) {
+        if (document.hidden || isPaused) return;
+        const wave = document.createElement('div');
+        wave.className = 'crush-shockwave';
+        wave.style.left = `${cx}px`;
+        wave.style.top = `${cy}px`;
+        document.body.appendChild(wave);
+        setTimeout(() => {
+          if (wave.parentNode) wave.parentNode.removeChild(wave);
+        }, 360);
+      }
+
+      const PIXEL_HAND_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 20" shape-rendering="crispEdges" width="100" height="125">
+  <rect x="1" y="15" width="5" height="5" fill="#180003"/>
+  <rect x="2" y="14" width="4" height="6" fill="#2d0006"/>
+  <rect x="3" y="14" width="2" height="6" fill="#ff1a35"/>
+  <rect x="3" y="8" width="7" height="7" fill="#180003"/>
+  <rect x="4" y="9" width="5" height="5" fill="#380008"/>
+  <rect x="5" y="10" width="3" height="3" fill="#660010"/>
+  <rect x="4" y="8" width="6" height="1" fill="#ff1a35"/>
+  <rect x="3" y="9" width="1" height="5" fill="#ff1a35"/>
+  <rect x="2" y="5" width="3" height="4" fill="#180003"/>
+  <rect x="2" y="4" width="2" height="3" fill="#380008"/>
+  <rect x="3" y="3" width="2" height="2" fill="#ff3344"/>
+  <rect x="4" y="2" width="2" height="2" fill="#ffffff"/>
+  <rect x="9" y="5" width="5" height="2" fill="#180003"/>
+  <rect x="10" y="5" width="4" height="2" fill="#380008"/>
+  <rect x="13" y="5" width="2" height="2" fill="#ff1a35"/>
+  <rect x="14" y="6" width="2" height="1" fill="#ffffff"/>
+  <rect x="9" y="8" width="6" height="2" fill="#180003"/>
+  <rect x="10" y="8" width="5" height="2" fill="#380008"/>
+  <rect x="14" y="8" width="2" height="2" fill="#ff1a35"/>
+  <rect x="15" y="9" width="2" height="1" fill="#ffffff"/>
+  <rect x="9" y="11" width="5" height="2" fill="#180003"/>
+  <rect x="10" y="11" width="4" height="2" fill="#380008"/>
+  <rect x="13" y="11" width="2" height="2" fill="#ff1a35"/>
+  <rect x="14" y="12" width="2" height="1" fill="#ffffff"/>
+  <rect x="8" y="14" width="4" height="2" fill="#180003"/>
+  <rect x="9" y="14" width="3" height="2" fill="#380008"/>
+  <rect x="11" y="14" width="2" height="2" fill="#ff1a35"/>
+  <rect x="12" y="15" width="1" height="1" fill="#ffffff"/>
+  <rect x="8" y="6" width="1" height="1" fill="#ff4d66"/>
+  <rect x="8" y="9" width="1" height="1" fill="#ff4d66"/>
+  <rect x="8" y="12" width="1" height="1" fill="#ff4d66"/>
+  <rect x="7" y="15" width="1" height="1" fill="#ff4d66"/>
+</svg>`;
+
+      // --- HANDS CRUSH LOGIC (35000 clicks, +350 clicks per crush) ---
+      function fireHandsCrush() {
+        if (!popup.classList.contains('show') || isPaused) return;
+
+        const popupRect = popup.getBoundingClientRect();
+        const starCenterX = popupRect.left + popupRect.width / 2;
+        const starCenterY = popupRect.top + popupRect.height / 2;
+
+        starCurrency += 350;
+        totalClicksLifetime += 350;
+        updateClickerUI();
+
+        if (document.hidden) return;
+
+        const handsContainer = document.createElement('div');
+        handsContainer.className = 'pixel-hands-container';
+        handsContainer.style.left = `${starCenterX}px`;
+        handsContainer.style.top = `${starCenterY}px`;
+
+        const leftHand = document.createElement('div');
+        leftHand.className = 'pixel-hand pixel-hand-left';
+        leftHand.innerHTML = PIXEL_HAND_SVG;
+
+        const rightHand = document.createElement('div');
+        rightHand.className = 'pixel-hand pixel-hand-right';
+        rightHand.innerHTML = PIXEL_HAND_SVG;
+
+        handsContainer.appendChild(leftHand);
+        handsContainer.appendChild(rightHand);
+        document.body.appendChild(handsContainer);
+
+        // Impact & crush happens at ~380ms
+        setTimeout(() => {
+          triggerStarCrush();
+          spawnCrushShockwave(starCenterX, starCenterY);
+          spawnStarChunks(starCenterX, starCenterY);
+        }, 380);
+
+        // Remove from DOM when animation completes
+        setTimeout(() => {
+          if (handsContainer.parentNode) handsContainer.parentNode.removeChild(handsContainer);
+        }, 900);
+      }
+
+      function startHandsLoop() {
+        if (handsInterval) clearInterval(handsInterval);
+        if (handsCount <= 0 || isPaused) return;
+        handsInterval = setInterval(() => {
+          if (isPaused) return;
+          for (let i = 0; i < handsCount; i++) {
+            setTimeout(() => {
+              if (!isPaused) fireHandsCrush();
+            }, (1000 / handsCount) * i);
+          }
+        }, 1000);
+      }
+
+      buyHandsBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (starCurrency >= handsCurrentCost) {
+          starCurrency -= handsCurrentCost;
+          handsCount++;
+          handsCurrentCost = Math.round(handsBaseCost * Math.pow(1.15, handsCount));
+          startHandsLoop();
           updateClickerUI();
           saveGame();
         }
