@@ -98,9 +98,10 @@
       user-select: none;
       -webkit-user-select: none;
     }
-    /* Star popup: absolute inside message-section, JS sets top to viewport-center on appear */
+    /* Star popup: fixed spawn position inside message-section */
     .popup-overlay {
       position: absolute;
+      top: clamp(20px, 2.5vh, 36px);
       left: 50%;
       transform: translate(-50%, -50%) scale(0.6);
       width: clamp(140px, 35vw, 240px);
@@ -259,6 +260,42 @@
       color: rgba(255, 170, 170, 0.85);
       letter-spacing: 1px;
       margin-top: -0.2rem;
+    }
+    /* Total CPS HUD in bottom left */
+    .total-cps-hud {
+      position: fixed;
+      bottom: 2rem;
+      left: 2rem;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: rgba(15, 0, 0, 0.82);
+      border: 1.5px solid rgba(255, 40, 40, 0.55);
+      padding: 0.6rem 1.25rem;
+      border-radius: 12px;
+      box-shadow: 0 6px 25px rgba(0, 0, 0, 0.85), 0 0 16px rgba(255, 0, 0, 0.4);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      opacity: 0;
+      transform: translateY(15px);
+      pointer-events: none;
+      transition: opacity 0.6s ease, transform 0.6s ease;
+      font-family: 'Jacquard 12', 'Times New Roman', serif;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .total-cps-hud.active {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    .total-cps-text {
+      font-size: 28px;
+      color: #fff;
+      letter-spacing: 2px;
+      text-shadow: 0 0 12px rgba(255, 50, 50, 0.9);
+      line-height: 1;
     }
     /* Animated auto-clicking mouse cursor (attached relative to the popup star) */
     .flying-clicker-mouse {
@@ -440,32 +477,6 @@
     }
     .popup-overlay img#popupImg.bouncing {
       animation: starBounceAnim 0.18s ease-out forwards;
-    }
-    /* Pixelated Lasgun tracer */
-    .lasgun-tracer {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 5px;
-      background: repeating-linear-gradient(
-        to top,
-        #ffffff 0px,
-        #ffffff 4px,
-        #ff2233 4px,
-        #ff2233 8px,
-        #bb0011 8px,
-        #bb0011 12px
-      );
-      image-rendering: pixelated;
-      border-radius: 0;
-      z-index: 100;
-      pointer-events: none;
-      transform-origin: top center;
-      box-shadow:
-        0 0 6px 2px #ffffff,
-        0 0 14px 4px #ff0022,
-        0 0 24px 6px rgba(255, 0, 0, 0.6);
-      animation: lasgunFlash 0.2s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
     }
     /* Eye Slash and Icon Styles */
     .eye-slash-line {
@@ -652,27 +663,14 @@
     </button>
     <div class="laser-cps-text" id="laserDisplay" style="display:none;">0 lasers (0/s)</div>
     <button class="eye-buy-btn" id="buyEyeBtn" style="display:none;">
-      <svg width="24" height="24" viewBox="0 0 16 16" style="image-rendering:pixelated; flex-shrink:0;">
-        <rect x="5" y="3" width="6" height="1" fill="#ff4466"/>
-        <rect x="3" y="4" width="2" height="1" fill="#ff4466"/>
-        <rect x="11" y="4" width="2" height="1" fill="#ff4466"/>
-        <rect x="2" y="5" width="1" height="2" fill="#ff4466"/>
-        <rect x="13" y="5" width="1" height="2" fill="#ff4466"/>
-        <rect x="1" y="7" width="1" height="2" fill="#ff2244"/>
-        <rect x="14" y="7" width="1" height="2" fill="#ff2244"/>
-        <rect x="2" y="9" width="1" height="2" fill="#cc0022"/>
-        <rect x="13" y="9" width="1" height="2" fill="#cc0022"/>
-        <rect x="3" y="11" width="2" height="1" fill="#990011"/>
-        <rect x="11" y="11" width="2" height="1" fill="#990011"/>
-        <rect x="5" y="12" width="6" height="1" fill="#990011"/>
-        <rect x="4" y="5" width="8" height="6" fill="#ffe6eb"/>
-        <rect x="6" y="6" width="4" height="4" fill="#ff0033"/>
-        <rect x="7" y="7" width="2" height="2" fill="#220005"/>
-        <rect x="8" y="7" width="1" height="1" fill="#ffffff"/>
-      </svg>
       <span>+1 eye (<span id="eyeCost">7500</span>)</span>
     </button>
     <div class="eye-cps-text" id="eyeDisplay" style="display:none;">0 eyes (0/s)</div>
+  </div>
+
+  <!-- Total CPS HUD in bottom left -->
+  <div class="total-cps-hud" id="totalCpsHud" aria-hidden="true">
+    <span class="total-cps-text" id="totalCpsDisplay">total: 0 clicks/s</span>
   </div>
 
   <!-- Reset Confirmation Modal -->
@@ -701,6 +699,10 @@
       const costDisplay = document.getElementById('autoClickerCost');
       const cpsDisplay = document.getElementById('cpsDisplay');
 
+      // Total CPS refs
+      const totalCpsHud = document.getElementById('totalCpsHud');
+      const totalCpsDisplay = document.getElementById('totalCpsDisplay');
+
       // Laser refs
       const buyLaserBtn = document.getElementById('buyLaserBtn');
       const laserCostDisplay = document.getElementById('laserCost');
@@ -718,6 +720,8 @@
       const cancelResetBtn = document.getElementById('cancelResetBtn');
       let iDotClicks = 0;
       let iDotTimer = null;
+      let isPaused = false;
+      let isResetting = false;
 
       let count = 0;
       let hideTimeout = null;
@@ -751,9 +755,13 @@
 
       const messageSection = document.querySelector('.message-section');
 
-      // Star bounce animation trigger
+      // Star bounce animation trigger (throttled to avoid layout thrashing)
+      let lastBounceTime = 0;
       function triggerStarBounce() {
-        // Set CSS custom properties for base-scale and base-rot
+        const now = performance.now();
+        if (now - lastBounceTime < 90) return;
+        lastBounceTime = now;
+
         let currentScale = 1.0;
         if (totalClicksLifetime >= 50 && totalClicksLifetime < 100) {
           const progress = (totalClicksLifetime - 50) / 50;
@@ -769,7 +777,10 @@
 
       // Local storage persistence
       const SAVE_KEY = 'zeras_clicker_save';
+      let saveTimeout = null;
+
       function saveGame() {
+        if (isResetting || isPaused) return;
         try {
           const data = {
             starCurrency,
@@ -780,6 +791,15 @@
           };
           localStorage.setItem(SAVE_KEY, JSON.stringify(data));
         } catch (err) {}
+      }
+
+      function queueSave() {
+        if (isResetting || isPaused) return;
+        if (saveTimeout) return;
+        saveTimeout = setTimeout(() => {
+          saveTimeout = null;
+          saveGame();
+        }, 800);
       }
 
       function loadGame() {
@@ -802,7 +822,6 @@
             if (eyeCount > 0) startEyeLoop();
 
             if (totalClicksLifetime >= 100) {
-              centerPopupOnViewport();
               popup.classList.remove('fade-out');
               popup.classList.add('show');
             }
@@ -812,27 +831,50 @@
 
       // Reset modal handling
       function openResetModal() {
+        isPaused = true;
+        if (autoClickInterval) { clearInterval(autoClickInterval); autoClickInterval = null; }
+        if (laserInterval) { clearInterval(laserInterval); laserInterval = null; }
+        if (eyeInterval) { clearInterval(eyeInterval); eyeInterval = null; }
         resetModal.classList.add('open');
         resetModal.removeAttribute('aria-hidden');
       }
+
       function closeResetModal() {
+        isPaused = false;
+        if (autoClickers > 0) startAutoClickerLoop();
+        if (laserCount > 0) startLaserLoop();
+        if (eyeCount > 0) startEyeLoop();
         resetModal.classList.remove('open');
         resetModal.setAttribute('aria-hidden', 'true');
       }
+
       confirmResetBtn.addEventListener('click', (e) => {
         e.stopPropagation();
+        isResetting = true;
+        isPaused = true;
+        if (autoClickInterval) { clearInterval(autoClickInterval); autoClickInterval = null; }
+        if (laserInterval) { clearInterval(laserInterval); laserInterval = null; }
+        if (eyeInterval) { clearInterval(eyeInterval); eyeInterval = null; }
+        if (hideTimeout) clearTimeout(hideTimeout);
+        if (spreeDecayTimer) clearTimeout(spreeDecayTimer);
+        if (saveTimeout) clearTimeout(saveTimeout);
+        starCurrency = 0;
+        totalClicksLifetime = 0;
+        autoClickers = 0;
+        laserCount = 0;
+        eyeCount = 0;
         try {
           localStorage.removeItem(SAVE_KEY);
+          localStorage.clear();
         } catch (err) {}
         location.reload();
       });
+
       cancelResetBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         closeResetModal();
       });
-      resetModal.addEventListener('click', (e) => {
-        if (e.target === resetModal) closeResetModal();
-      });
+      // Pop-up is only dismissed by clicking cancel or yes reset (clicking outside does nothing)
 
       // Triple click on i-dot to trigger reset confirmation
       iDot.addEventListener('click', (e) => {
@@ -849,23 +891,22 @@
         }
       });
 
-      // Position the star at the center of the current viewport (as absolute inside message-section)
-      function centerPopupOnViewport() {
-        const viewportCenterY = window.scrollY + window.innerHeight / 2;
-        const sectionTop = messageSection.offsetTop;
-        popup.style.top = (viewportCenterY - sectionTop) + 'px';
-      }
-
       function updateClickerUI() {
         countDisplay.textContent = Math.floor(starCurrency);
         costDisplay.textContent = autoClickerCost;
         cpsDisplay.textContent = `${autoClickers} mouse clickers (${autoClickers}/s)`;
         buyBtn.disabled = starCurrency < autoClickerCost;
 
+        // Total CPS count for bottom left HUD
+        const totalCps = (autoClickers * 1) + (laserCount * 12) + (eyeCount * 65);
+        totalCpsDisplay.textContent = `total: ${totalCps} clicks/s`;
+
         // Clicker HUD game unlocks at 100 clicks
         if (totalClicksLifetime >= 100) {
           clickerHud.classList.add('active');
           clickerHud.removeAttribute('aria-hidden');
+          totalCpsHud.classList.add('active');
+          totalCpsHud.removeAttribute('aria-hidden');
         }
 
         // Show laser button once player hits 1000 lifetime clicks
@@ -886,7 +927,7 @@
         eyeDisplay.textContent = `${eyeCount} eyes (${eyeCount * 65}/s)`;
         buyEyeBtn.disabled = starCurrency < eyeCurrentCost;
 
-        saveGame();
+        queueSave();
       }
 
       function clearStars() {
@@ -915,13 +956,17 @@
       }
 
       function spawnFlyingMouse() {
+        if (document.hidden || isPaused) return;
+        // Cap flying mice in DOM to avoid element spam
+        if (popup.querySelectorAll('.flying-clicker-mouse').length >= 4) return;
+
         const mouse = document.createElement('img');
         mouse.src = 'CLICKER.cur';
         mouse.className = 'flying-clicker-mouse';
 
         // Position relative to the inner left edge of the star inside popup
-        const posX = 15 + (Math.random() * 15 - 7.5); // ~15% from left of star
-        const posY = 48 + (Math.random() * 20 - 10);   // ~48% vertically
+        const posX = 15 + (Math.random() * 15 - 7.5);
+        const posY = 48 + (Math.random() * 20 - 10);
 
         mouse.style.left = posX + '%';
         mouse.style.top = posY + '%';
@@ -936,7 +981,8 @@
       }
 
       function spawnMiniStars(amount) {
-        if (starsContainer.children.length > 45) return;
+        if (document.hidden || isPaused) return;
+        if (starsContainer.children.length > 30) return;
 
         for (let i = 0; i < amount; i++) {
           const star = document.createElement('img');
@@ -957,10 +1003,16 @@
           star.style.top = posY + 'vh';
 
           starsContainer.appendChild(star);
+
+          // Clean up after animation to prevent unbounded memory/DOM usage
+          setTimeout(() => {
+            if (star.parentNode) star.parentNode.removeChild(star);
+          }, (parseFloat(duration) * 3 + parseFloat(delay)) * 1000);
         }
       }
 
       function performStarClick(isManual = true) {
+        if (isPaused) return;
         starCurrency++;
         totalClicksLifetime++;
         const now = Date.now();
@@ -975,9 +1027,6 @@
           scheduleSpreeDecay();
 
           // Star scale logic (manual clicks only):
-          // Clicks < 50: 1.0x
-          // Clicks 50 -> 100: Grows smoothly from 1.0x up to 1.55x
-          // Clicks >= 100: Locks at 1.0x (game start)
           let currentScale = 1.0;
           if (totalClicksLifetime >= 50 && totalClicksLifetime < 100) {
             const progress = (totalClicksLifetime - 50) / 50;
@@ -1002,8 +1051,6 @@
           popupImg.style.transition = `transform ${spinSpeed.toFixed(3)}s ${easing}`;
 
           // Rotation logic:
-          // In initial stage (< 50 clicks): wiggles between -90deg and 90deg
-          // At 50 clicks and beyond: starts spinning forward continuously (+90deg)
           if (totalClicksLifetime < 50) {
             isRotated = !isRotated;
             currentDeg = isRotated ? -90 : 90;
@@ -1013,7 +1060,7 @@
 
           popupImg.style.transform = `scale(${currentScale}) rotate(${currentDeg}deg)`;
 
-          // Vignette fades in progressively starting at 50 clicks (or during rapid clicking sprees)
+          // Vignette fades in progressively starting at 50 clicks
           let vignetteIntensity = 0;
           if (totalClicksLifetime >= 50) {
             const baseVignette = Math.min((totalClicksLifetime - 50) / 100, 0.75);
@@ -1024,13 +1071,12 @@
           }
           vignette.style.opacity = vignetteIntensity.toString();
 
-          // Small bounce reaction on star
           triggerStarBounce();
 
           const starsToSpawn = Math.min(2 + Math.floor(spamClicks / 3), 4);
           spawnMiniStars(starsToSpawn);
         } else {
-          // Auto-clicker triggers the flying click animation on the star without spinning it
+          // Auto-clicker triggers the flying click animation without spinning
           spawnFlyingMouse();
           triggerStarBounce();
         }
@@ -1041,11 +1087,12 @@
 
       function startAutoClickerLoop() {
         if (autoClickInterval) clearInterval(autoClickInterval);
-        if (autoClickers <= 0) return;
+        if (autoClickers <= 0 || isPaused) return;
         autoClickInterval = setInterval(() => {
+          if (isPaused) return;
           for (let i = 0; i < autoClickers; i++) {
             setTimeout(() => {
-              performStarClick(false);
+              if (!isPaused) performStarClick(false);
             }, (1000 / autoClickers) * i);
           }
         }, 1000);
@@ -1059,6 +1106,7 @@
           autoClickerCost = Math.round(autoClickerBaseCost * Math.pow(1.15, autoClickers));
           startAutoClickerLoop();
           updateClickerUI();
+          saveGame();
         }
       });
 
@@ -1070,7 +1118,6 @@
         count++;
         if (count === 10) {
           count = 0;
-          centerPopupOnViewport();
           popup.classList.remove('fade-out');
           popup.classList.add('show');
           scheduleFadeOut();
@@ -1083,7 +1130,7 @@
 
       // --- LASGUN BEAM & SHOT LOGIC ---
       function fireLaser() {
-        if (!popup.classList.contains('show')) return;
+        if (!popup.classList.contains('show') || isPaused) return;
 
         // Target: random point on the visible star
         const popupRect = popup.getBoundingClientRect();
@@ -1092,24 +1139,27 @@
         const targetX = popupRect.left + popupRect.width / 2 + offsetX;
         const targetY = popupRect.top + popupRect.height / 2 + offsetY;
 
+        // Give +12 clicks per shot
+        starCurrency += 12;
+        totalClicksLifetime += 12;
+        updateClickerUI();
+
+        // Skip visual particle effects if tab is in background to save battery/CPU
+        if (document.hidden) return;
+
         // Multiple spawn positions strictly OUTSIDE the viewport near bottom right
-        // Origin choice: 0 = past the bottom edge, 1 = past the right edge
         let startX, startY;
         if (Math.random() < 0.55) {
-          // Off-screen along bottom edge
           startX = window.innerWidth - (10 + Math.random() * 260);
           startY = window.innerHeight + 25 + Math.random() * 25;
         } else {
-          // Off-screen along right edge
           startX = window.innerWidth + 25 + Math.random() * 25;
           startY = window.innerHeight - (10 + Math.random() * 200);
         }
 
-        // Vector calculation from origin (startX, startY) to target (targetX, targetY)
         const dx = targetX - startX;
         const dy = targetY - startY;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        // Angle pointing along length
         const angleRad = Math.atan2(dy, dx) - Math.PI / 2;
 
         // Spawn muzzle flash at the off-screen origin
@@ -1122,7 +1172,7 @@
           if (muzzle.parentNode) muzzle.parentNode.removeChild(muzzle);
         }, 120);
 
-        // Create pixelated high-energy lasgun beam tracer (z-index 100 sits behind HUD buttons)
+        // High-energy glowing lasgun beam tracer
         const tracer = document.createElement('div');
         tracer.className = 'lasgun-tracer';
         tracer.style.height = `${dist}px`;
@@ -1134,7 +1184,6 @@
 
         // Impact flash and chunk explosion on the star
         setTimeout(() => {
-          // Spawn impact flash
           const flash = document.createElement('div');
           flash.className = 'laser-impact-flash';
           flash.style.left = `${targetX}px`;
@@ -1144,26 +1193,22 @@
             if (flash.parentNode) flash.parentNode.removeChild(flash);
           }, 240);
 
-          // Spawn exploding star chunks
           spawnStarChunks(targetX, targetY);
-
-          // Bounce star on laser impact
           triggerStarBounce();
-
-          // Give +12 clicks per shot (rebalanced from +10)
-          starCurrency += 12;
-          totalClicksLifetime += 12;
-          updateClickerUI();
         }, 40);
 
-        // Remove tracer after animation finishes
+        // Remove tracer after animation finishes (0.22s duration)
         setTimeout(() => {
           if (tracer.parentNode) tracer.parentNode.removeChild(tracer);
-        }, 200);
+        }, 220);
       }
 
       function spawnStarChunks(cx, cy) {
-        const chunkCount = 4 + Math.floor(Math.random() * 4);
+        if (document.hidden || isPaused) return;
+        // Cap concurrent chunk nodes in DOM to prevent slowdowns
+        if (document.querySelectorAll('.star-chunk').length >= 24) return;
+
+        const chunkCount = 3 + Math.floor(Math.random() * 3);
         for (let i = 0; i < chunkCount; i++) {
           const chunk = document.createElement('img');
           chunk.src = 'favicon.svg';
@@ -1171,11 +1216,10 @@
           chunk.style.left = cx + 'px';
           chunk.style.top = cy + 'px';
 
-          // Random scatter velocity
           const angle = Math.random() * Math.PI * 2;
           const dist = 40 + Math.random() * 130;
           const flyX = Math.cos(angle) * dist;
-          const flyY = Math.sin(angle) * dist - 30; // slight upward bias
+          const flyY = Math.sin(angle) * dist - 30;
           const flyRot = (Math.random() - 0.5) * 540;
 
           chunk.style.setProperty('--cx', flyX + 'px');
@@ -1193,12 +1237,12 @@
 
       function startLaserLoop() {
         if (laserInterval) clearInterval(laserInterval);
-        if (laserCount <= 0) return;
-        // Each laser fires once per second staggered evenly
+        if (laserCount <= 0 || isPaused) return;
         laserInterval = setInterval(() => {
+          if (isPaused) return;
           for (let i = 0; i < laserCount; i++) {
             setTimeout(() => {
-              fireLaser();
+              if (!isPaused) fireLaser();
             }, (1000 / laserCount) * i);
           }
         }, 1000);
@@ -1206,13 +1250,18 @@
 
       // --- EYE SWORD SLASH BUFF LOGIC (7500 clicks, +65 clicks per slash) ---
       function fireEyeSlash() {
-        if (!popup.classList.contains('show')) return;
+        if (!popup.classList.contains('show') || isPaused) return;
 
         const popupRect = popup.getBoundingClientRect();
         const starCenterX = popupRect.left + popupRect.width / 2;
         const starCenterY = popupRect.top + popupRect.height / 2;
 
-        // Create razor-sharp eye sword slash across the star
+        starCurrency += 65;
+        totalClicksLifetime += 65;
+        updateClickerUI();
+
+        if (document.hidden) return;
+
         const slash = document.createElement('div');
         slash.className = 'eye-slash-line';
         const slashWidth = Math.max(popupRect.width * 1.5, 200);
@@ -1220,20 +1269,14 @@
         slash.style.left = `${starCenterX}px`;
         slash.style.top = `${starCenterY}px`;
 
-        // Vary slash angle slightly like a dynamic sword slash
         const angle = -45 + (Math.random() * 30 - 15);
         slash.style.setProperty('--slash-angle', `${angle}deg`);
 
         document.body.appendChild(slash);
 
-        // Star bounce and chunks on slash contact
         setTimeout(() => {
           triggerStarBounce();
           spawnStarChunks(starCenterX, starCenterY);
-          // Give +65 clicks per slash (rebalanced from +50)
-          starCurrency += 65;
-          totalClicksLifetime += 65;
-          updateClickerUI();
         }, 80);
 
         setTimeout(() => {
@@ -1243,12 +1286,12 @@
 
       function startEyeLoop() {
         if (eyeInterval) clearInterval(eyeInterval);
-        if (eyeCount <= 0) return;
-        // Each eye slashes once per second staggered evenly
+        if (eyeCount <= 0 || isPaused) return;
         eyeInterval = setInterval(() => {
+          if (isPaused) return;
           for (let i = 0; i < eyeCount; i++) {
             setTimeout(() => {
-              fireEyeSlash();
+              if (!isPaused) fireEyeSlash();
             }, (1000 / eyeCount) * i);
           }
         }, 1000);
@@ -1262,6 +1305,7 @@
           laserCurrentCost = Math.round(laserBaseCost * Math.pow(1.15, laserCount));
           startLaserLoop();
           updateClickerUI();
+          saveGame();
         }
       });
 
@@ -1273,7 +1317,14 @@
           eyeCurrentCost = Math.round(eyeBaseCost * Math.pow(1.15, eyeCount));
           startEyeLoop();
           updateClickerUI();
+          saveGame();
         }
+      });
+
+      // Save state on tab leave or close
+      window.addEventListener('beforeunload', saveGame);
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) saveGame();
       });
 
       // Load cached game progress from browser memory on initialization
