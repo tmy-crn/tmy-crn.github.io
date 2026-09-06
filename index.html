@@ -595,10 +595,10 @@
       position: absolute;
       top: 0;
       left: 0;
-      width: 160px;
-      height: 130px;
-      margin-left: -80px;
-      margin-top: -65px;
+      width: 128px;
+      height: 88px;
+      margin-left: -64px;
+      margin-top: -44px;
       pointer-events: none;
       image-rendering: pixelated;
       transform-origin: center center;
@@ -612,58 +612,58 @@
     @keyframes handLeftCrush {
       0% {
         opacity: 0;
-        transform: translate(-180px, 0px) scale(0.2) rotate(-15deg);
+        transform: translate(-150px, 0px) scale(0.2) rotate(-15deg);
         filter: blur(4px) brightness(0.3);
       }
       35% {
         opacity: 0.95;
-        transform: translate(-90px, 0px) scale(1.15) rotate(-8deg);
+        transform: translate(-75px, 0px) scale(1.15) rotate(-8deg);
         filter: blur(0px) brightness(1) drop-shadow(0 0 15px rgba(255, 255, 255, 0.6));
       }
       50% {
         /* CRUSH impact right against the star */
         opacity: 1;
-        transform: translate(-40px, 0px) scale(1.0) rotate(2deg);
+        transform: translate(-32px, 0px) scale(1.0) rotate(2deg);
         filter: drop-shadow(0 0 20px rgba(255, 0, 0, 0.9));
       }
       72% {
         opacity: 0.95;
-        transform: translate(-42px, 0px) scale(1.02) rotate(1deg);
+        transform: translate(-34px, 0px) scale(1.02) rotate(1deg);
         filter: drop-shadow(0 0 15px rgba(255, 0, 0, 0.7));
       }
       100% {
         /* Fade away into darkness */
         opacity: 0;
-        transform: translate(-80px, 0px) scale(1.15) rotate(-5deg);
+        transform: translate(-65px, 0px) scale(1.15) rotate(-5deg);
         filter: blur(3px) opacity(0);
       }
     }
     @keyframes handRightCrush {
       0% {
         opacity: 0;
-        transform: translate(180px, 0px) scaleX(-1) scale(0.2) rotate(-15deg);
+        transform: translate(150px, 0px) scaleX(-1) scale(0.2) rotate(-15deg);
         filter: blur(4px) brightness(0.3);
       }
       35% {
         opacity: 0.95;
-        transform: translate(90px, 0px) scaleX(-1) scale(1.15) rotate(-8deg);
+        transform: translate(75px, 0px) scaleX(-1) scale(1.15) rotate(-8deg);
         filter: blur(0px) brightness(1) drop-shadow(0 0 15px rgba(255, 255, 255, 0.6));
       }
       50% {
         /* CRUSH impact right against the star */
         opacity: 1;
-        transform: translate(40px, 0px) scaleX(-1) scale(1.0) rotate(2deg);
+        transform: translate(32px, 0px) scaleX(-1) scale(1.0) rotate(2deg);
         filter: drop-shadow(0 0 20px rgba(255, 0, 0, 0.9));
       }
       72% {
         opacity: 0.95;
-        transform: translate(42px, 0px) scaleX(-1) scale(1.02) rotate(1deg);
+        transform: translate(34px, 0px) scaleX(-1) scale(1.02) rotate(1deg);
         filter: drop-shadow(0 0 15px rgba(255, 0, 0, 0.7));
       }
       100% {
         /* Fade away into darkness */
         opacity: 0;
-        transform: translate(80px, 0px) scaleX(-1) scale(1.15) rotate(-5deg);
+        transform: translate(65px, 0px) scaleX(-1) scale(1.15) rotate(-5deg);
         filter: blur(3px) opacity(0);
       }
     }
@@ -820,15 +820,15 @@
     </button>
     <div class="clicker-cps-text" id="cpsDisplay">0 clickers (0/s)</div>
     <button class="laser-buy-btn" id="buyLaserBtn" style="display:none;">
-      <span>+1 laser (<span id="laserCost">1200</span>)</span>
+      <span>+1 laser (<span id="laserCost">1000</span>)</span>
     </button>
     <div class="laser-cps-text" id="laserDisplay" style="display:none;">0 lasers (0/s)</div>
     <button class="eye-buy-btn" id="buyEyeBtn" style="display:none;">
-      <span>+1 eye (<span id="eyeCost">7500</span>)</span>
+      <span>+1 eye (<span id="eyeCost">6000</span>)</span>
     </button>
     <div class="eye-cps-text" id="eyeDisplay" style="display:none;">0 eyes (0/s)</div>
     <button class="hands-buy-btn" id="buyHandsBtn" style="display:none;">
-      <span>+1 hands (<span id="handsCost">20000</span>)</span>
+      <span>+1 hands (<span id="handsCost">24000</span>)</span>
     </button>
     <div class="hands-cps-text" id="handsDisplay" style="display:none;">0 hands (0/s)</div>
   </div>
@@ -911,22 +911,22 @@
       let autoClickerCost = 100;
       let autoClickInterval = null;
 
-      // Tier 2: Lasgun beam (+12 clicks/s) - Base cost 1200, unlocks at 1000
+      // Tier 2: Lasgun beam (+10 clicks/s) - Base cost 1000, unlocks at 750
       let laserCount = 0;
-      let laserBaseCost = 1200;
-      let laserCurrentCost = 1200;
+      let laserBaseCost = 1000;
+      let laserCurrentCost = 1000;
       let laserInterval = null;
 
-      // Tier 3: Eye sword slash (+65 clicks/s) - Base cost 7500, unlocks at 7500
+      // Tier 3: Eye sword slash (+50 clicks/s) - Base cost 6000, unlocks at 4500
       let eyeCount = 0;
-      let eyeBaseCost = 7500;
-      let eyeCurrentCost = 7500;
+      let eyeBaseCost = 6000;
+      let eyeCurrentCost = 6000;
       let eyeInterval = null;
 
-      // Tier 4: Hands crush (+200 clicks/s) - Base cost 20000, unlocks at 15000
+      // Tier 4: Hands crush (+160 clicks/s) - Base cost 24000, unlocks at 15000
       let handsCount = 0;
-      let handsBaseCost = 20000;
-      let handsCurrentCost = 20000;
+      let handsBaseCost = 24000;
+      let handsCurrentCost = 24000;
       let handsInterval = null;
 
       const messageSection = document.querySelector('.message-section');
@@ -1082,7 +1082,7 @@
         buyBtn.disabled = starCurrency < autoClickerCost;
 
         // Total CPS count for bottom left HUD
-        const totalCps = (autoClickers * 1) + (laserCount * 12) + (eyeCount * 65) + (handsCount * 200);
+        const totalCps = (autoClickers * 1) + (laserCount * 10) + (eyeCount * 50) + (handsCount * 160);
         totalCpsDisplay.textContent = `total: ${totalCps} clicks/s`;
 
         // Clicker HUD game unlocks at 100 clicks
@@ -1093,22 +1093,22 @@
           totalCpsHud.removeAttribute('aria-hidden');
         }
 
-        // Show laser button once player hits 1000 lifetime clicks
-        if (totalClicksLifetime >= 1000) {
+        // Show laser button once player hits 750 lifetime clicks
+        if (totalClicksLifetime >= 750) {
           buyLaserBtn.style.display = '';
           laserDisplay.style.display = '';
         }
         laserCostDisplay.textContent = laserCurrentCost;
-        laserDisplay.textContent = `${laserCount} lasers (${laserCount * 12}/s)`;
+        laserDisplay.textContent = `${laserCount} lasers (${laserCount * 10}/s)`;
         buyLaserBtn.disabled = starCurrency < laserCurrentCost;
 
-        // Show eye button once player hits 7500 lifetime clicks
-        if (totalClicksLifetime >= 7500) {
+        // Show eye button once player hits 4500 lifetime clicks
+        if (totalClicksLifetime >= 4500) {
           buyEyeBtn.style.display = '';
           eyeDisplay.style.display = '';
         }
         eyeCostDisplay.textContent = eyeCurrentCost;
-        eyeDisplay.textContent = `${eyeCount} eyes (${eyeCount * 65}/s)`;
+        eyeDisplay.textContent = `${eyeCount} eyes (${eyeCount * 50}/s)`;
         buyEyeBtn.disabled = starCurrency < eyeCurrentCost;
 
         // Show hands button once player hits 15000 lifetime clicks
@@ -1117,7 +1117,7 @@
           handsDisplay.style.display = '';
         }
         handsCostDisplay.textContent = handsCurrentCost;
-        handsDisplay.textContent = `${handsCount} hands (${handsCount * 200}/s)`;
+        handsDisplay.textContent = `${handsCount} hands (${handsCount * 160}/s)`;
         buyHandsBtn.disabled = starCurrency < handsCurrentCost;
 
         queueSave();
@@ -1332,9 +1332,9 @@
         const targetX = popupRect.left + popupRect.width / 2 + offsetX;
         const targetY = popupRect.top + popupRect.height / 2 + offsetY;
 
-        // Give +12 clicks per shot
-        starCurrency += 12;
-        totalClicksLifetime += 12;
+        // Give +10 clicks per shot
+        starCurrency += 10;
+        totalClicksLifetime += 10;
         updateClickerUI();
 
         // Skip visual particle effects if tab is in background to save battery/CPU
@@ -1449,8 +1449,8 @@
         const starCenterX = popupRect.left + popupRect.width / 2;
         const starCenterY = popupRect.top + popupRect.height / 2;
 
-        starCurrency += 65;
-        totalClicksLifetime += 65;
+        starCurrency += 50;
+        totalClicksLifetime += 50;
         updateClickerUI();
 
         if (document.hidden) return;
@@ -1549,7 +1549,7 @@
         }, 360);
       }
 
-      // --- HANDS CRUSH LOGIC (15000 clicks, +200 clicks per crush) ---
+      // --- HANDS CRUSH LOGIC (15000 clicks, +160 clicks per crush) ---
       function fireHandsCrush() {
         if (!popup.classList.contains('show') || isPaused) return;
 
@@ -1557,8 +1557,8 @@
         const starCenterX = popupRect.left + popupRect.width / 2;
         const starCenterY = popupRect.top + popupRect.height / 2;
 
-        starCurrency += 200;
-        totalClicksLifetime += 200;
+        starCurrency += 160;
+        totalClicksLifetime += 160;
         updateClickerUI();
 
         if (document.hidden) return;
