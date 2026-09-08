@@ -1,34 +1,56 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 20" shape-rendering="crispEdges">
-  <rect x="1" y="15" width="5" height="5" fill="#180003"/>
-  <rect x="2" y="14" width="4" height="6" fill="#2d0006"/>
-  <rect x="3" y="14" width="2" height="6" fill="#ff1a35"/>
-  <rect x="3" y="8" width="7" height="7" fill="#180003"/>
-  <rect x="4" y="9" width="5" height="5" fill="#380008"/>
-  <rect x="5" y="10" width="3" height="3" fill="#660010"/>
-  <rect x="4" y="8" width="6" height="1" fill="#ff1a35"/>
-  <rect x="3" y="9" width="1" height="5" fill="#ff1a35"/>
-  <rect x="2" y="5" width="3" height="4" fill="#180003"/>
-  <rect x="2" y="4" width="2" height="3" fill="#380008"/>
-  <rect x="3" y="3" width="2" height="2" fill="#ff3344"/>
-  <rect x="4" y="2" width="2" height="2" fill="#ffffff"/>
-  <rect x="9" y="5" width="5" height="2" fill="#180003"/>
-  <rect x="10" y="5" width="4" height="2" fill="#380008"/>
-  <rect x="13" y="5" width="2" height="2" fill="#ff1a35"/>
-  <rect x="14" y="6" width="2" height="1" fill="#ffffff"/>
-  <rect x="9" y="8" width="6" height="2" fill="#180003"/>
-  <rect x="10" y="8" width="5" height="2" fill="#380008"/>
-  <rect x="14" y="8" width="2" height="2" fill="#ff1a35"/>
-  <rect x="15" y="9" width="2" height="1" fill="#ffffff"/>
-  <rect x="9" y="11" width="5" height="2" fill="#180003"/>
-  <rect x="10" y="11" width="4" height="2" fill="#380008"/>
-  <rect x="13" y="11" width="2" height="2" fill="#ff1a35"/>
-  <rect x="14" y="12" width="2" height="1" fill="#ffffff"/>
-  <rect x="8" y="14" width="4" height="2" fill="#180003"/>
-  <rect x="9" y="14" width="3" height="2" fill="#380008"/>
-  <rect x="11" y="14" width="2" height="2" fill="#ff1a35"/>
-  <rect x="12" y="15" width="1" height="1" fill="#ffffff"/>
-  <rect x="8" y="6" width="1" height="1" fill="#ff4d66"/>
-  <rect x="8" y="9" width="1" height="1" fill="#ff4d66"/>
-  <rect x="8" y="12" width="1" height="1" fill="#ff4d66"/>
-  <rect x="7" y="15" width="1" height="1" fill="#ff4d66"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 125">
+  <defs>
+    <linearGradient id="hg" x1="0" y1="0" x2="0.25" y2="1">
+      <stop offset="0" stop-color="#ff6472"/>
+      <stop offset="0.42" stop-color="#ff1a2f"/>
+      <stop offset="1" stop-color="#7d0012"/>
+    </linearGradient>
+    <radialGradient id="gloss" cx="0.36" cy="0.3" r="0.62">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="0.55" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="edge" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ff8f9a"/>
+      <stop offset="1" stop-color="#5a000d"/>
+    </linearGradient>
+  </defs>
+
+  <!-- dark base outline for depth -->
+  <g fill="#3a0008">
+    <rect x="2" y="52" width="46" height="38" rx="18"/>
+    <rect x="20" y="26" width="62" height="74" rx="27"/>
+    <circle cx="80" cy="42" r="12"/>
+    <circle cx="83" cy="58" r="12.5"/>
+    <circle cx="82" cy="74" r="12"/>
+    <circle cx="76" cy="88" r="11"/>
+    <ellipse cx="46" cy="94" rx="24" ry="15"/>
+  </g>
+
+  <!-- forearm / wrist -->
+  <rect x="4" y="54" width="42" height="34" rx="16" fill="url(#hg)"/>
+
+  <!-- main fist mass -->
+  <rect x="22" y="28" width="58" height="70" rx="25" fill="url(#hg)"/>
+
+  <!-- knuckles -->
+  <circle cx="79" cy="43" r="10.5" fill="url(#hg)"/>
+  <circle cx="82" cy="58" r="11" fill="url(#hg)"/>
+  <circle cx="81" cy="73" r="10.5" fill="url(#hg)"/>
+  <circle cx="75" cy="86" r="9.5" fill="url(#hg)"/>
+
+  <!-- thumb wrapping across the front -->
+  <ellipse cx="47" cy="92" rx="22" ry="13" fill="url(#hg)"/>
+
+  <!-- finger grooves for readability -->
+  <g stroke="#8f0016" stroke-width="2.4" stroke-linecap="round" opacity="0.65" fill="none">
+    <path d="M63 40 q10 2 15 4"/>
+    <path d="M64 56 q10 1 16 2"/>
+    <path d="M63 71 q10 1 15 3"/>
+  </g>
+
+  <!-- glossy highlight -->
+  <ellipse cx="42" cy="48" rx="21" ry="15" fill="url(#gloss)"/>
+  <ellipse cx="76" cy="39" rx="4.5" ry="3" fill="#ffffff" opacity="0.85"/>
+  <ellipse cx="79" cy="54" rx="4.5" ry="3" fill="#ffffff" opacity="0.8"/>
+  <path d="M26 40 q6 -12 22 -13" stroke="url(#edge)" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.7"/>
 </svg>
