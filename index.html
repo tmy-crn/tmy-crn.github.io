@@ -191,6 +191,13 @@
       flex-direction: column;
       align-items: flex-end;
       gap: 0.8rem;
+      max-height: calc(100vh - 3rem);
+      max-height: calc(100dvh - 3rem);
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 40, 40, 0.4) transparent;
+      padding-right: 4px;
       opacity: 0;
       transform: translateY(15px);
       pointer-events: none;
@@ -198,6 +205,13 @@
       font-family: 'Jacquard 12', 'Times New Roman', serif;
       user-select: none;
       -webkit-user-select: none;
+    }
+    .clicker-hud::-webkit-scrollbar {
+      width: 4px;
+    }
+    .clicker-hud::-webkit-scrollbar-thumb {
+      background: rgba(255, 40, 40, 0.4);
+      border-radius: 4px;
     }
     .clicker-hud.active {
       opacity: 1;
@@ -258,6 +272,55 @@
       border-color: rgba(255, 255, 255, 0.2);
       color: #888;
     }
+    /* Upgrade row and visibility eye toggle button */
+    .upgrade-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .upgrade-eye-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      background: rgba(35, 0, 0, 0.9);
+      border: 1.5px solid rgba(255, 60, 60, 0.6);
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.8);
+      transition: all 0.2s ease;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      flex-shrink: 0;
+    }
+    .upgrade-eye-btn:hover {
+      background: rgba(95, 0, 0, 0.98);
+      border-color: #ff3333;
+      transform: scale(1.06);
+      box-shadow: 0 0 16px rgba(255, 0, 0, 0.6);
+    }
+    .upgrade-eye-btn.is-hidden {
+      background: rgba(20, 0, 0, 0.7);
+      border-color: rgba(255, 60, 60, 0.35);
+      opacity: 0.7;
+    }
+    .upgrade-eye-btn.is-hidden:hover {
+      opacity: 1;
+      border-color: #ff3333;
+    }
+    .pixel-eye-svg {
+      width: 22px;
+      height: 22px;
+      display: block;
+      pointer-events: none;
+      filter: drop-shadow(0 0 4px rgba(255, 30, 40, 0.85));
+    }
+    .upgrade-eye-btn .eye-open { display: block; }
+    .upgrade-eye-btn .eye-closed { display: none; }
+    .upgrade-eye-btn.is-hidden .eye-open { display: none; }
+    .upgrade-eye-btn.is-hidden .eye-closed { display: block; }
     .clicker-cps-text {
       font-size: 24px;
       color: rgba(255, 170, 170, 0.85);
@@ -713,6 +776,312 @@
       50% { opacity: 0.9; }
       100% { opacity: 0; transform: translate(-50%, -50%) scale(3.5); }
     }
+    /* Meteor Upgrade - Blazing Cosmic Meteor Animation & Styles */
+    .meteor-buy-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: rgba(35, 0, 0, 0.9);
+      border: 1.5px solid rgba(255, 60, 60, 0.6);
+      color: #ffe6e6;
+      padding: 0.6rem 1.1rem;
+      border-radius: 10px;
+      font-family: 'Jacquard 12', 'Times New Roman', serif;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.8);
+      transition: all 0.2s ease;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .meteor-buy-btn:hover:not(:disabled) {
+      background: rgba(95, 0, 0, 0.98);
+      border-color: #ff3333;
+      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
+    }
+    .meteor-buy-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      border-color: rgba(255, 255, 255, 0.2);
+      color: #888;
+    }
+    .meteor-cps-text {
+      font-size: 24px;
+      color: rgba(255, 170, 170, 0.85);
+      letter-spacing: 1px;
+      margin-top: -0.2rem;
+    }
+    .meteor-projectile {
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 10004;
+      transform-origin: 0 0;
+      animation: meteorFly 0.26s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+    }
+    @keyframes meteorFly {
+      0% {
+        opacity: 0;
+        transform: translate(var(--startX), var(--startY)) rotate(var(--angle)) scale(0.5);
+      }
+      20% {
+        opacity: 1;
+      }
+      100% {
+        opacity: 1;
+        transform: translate(var(--targetX), var(--targetY)) rotate(var(--angle)) scale(1.1);
+      }
+    }
+    .meteor-tail {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 8px;
+      height: var(--tail-len, 140px);
+      margin-left: -4px;
+      background: linear-gradient(to top, #ffffff 0%, rgba(255, 55, 75, 0.9) 25%, rgba(200, 10, 30, 0.45) 65%, transparent 100%);
+      border-radius: 4px;
+      filter: drop-shadow(0 0 10px rgba(255, 0, 40, 0.85));
+      pointer-events: none;
+    }
+    .meteor-body {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 22px;
+      height: 22px;
+      margin-left: -11px;
+      margin-top: -11px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #ffffff 20%, #ff3b56 55%, #8b0000 90%);
+      box-shadow: 0 0 18px 6px rgba(255, 30, 60, 0.95), 0 0 35px 12px rgba(255, 0, 0, 0.6);
+      pointer-events: none;
+    }
+    .meteor-impact-flash {
+      position: fixed;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #ffffff 20%, #ff2244 55%, rgba(139, 0, 0, 0) 100%);
+      transform: translate(-50%, -50%) scale(0.3);
+      z-index: 10005;
+      pointer-events: none;
+      box-shadow: 0 0 50px 20px rgba(255, 30, 30, 0.95);
+      animation: meteorImpactAnim 0.32s ease-out forwards;
+    }
+    @keyframes meteorImpactAnim {
+      0% { opacity: 1; transform: translate(-50%, -50%) scale(0.4); }
+      40% { opacity: 1; transform: translate(-50%, -50%) scale(1.8); }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(2.8); }
+    }
+    .meteor-blast-ring {
+      position: fixed;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      border: 3px solid #ff4455;
+      background: radial-gradient(circle, rgba(255, 50, 50, 0.5) 0%, rgba(255, 0, 0, 0) 70%);
+      transform: translate(-50%, -50%) scale(0.2);
+      z-index: 10004;
+      pointer-events: none;
+      box-shadow: 0 0 30px 10px rgba(255, 20, 40, 0.9);
+      animation: meteorRingAnim 0.42s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+    }
+    @keyframes meteorRingAnim {
+      0% { opacity: 1; transform: translate(-50%, -50%) scale(0.2); }
+      50% { opacity: 0.9; }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(3.6); }
+    }
+    .meteor-ember {
+      position: fixed;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #ffdd88;
+      box-shadow: 0 0 10px 4px #ff2233;
+      pointer-events: none;
+      z-index: 10005;
+      animation: emberFly var(--ember-time, 0.5s) ease-out forwards;
+    }
+    @keyframes emberFly {
+      0% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1.4);
+      }
+      50% {
+        opacity: 0.9;
+        transform: translate(var(--ex), var(--ey)) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(calc(var(--ex) * 1.3), calc(var(--ey) + 60px)) scale(0.2);
+      }
+    }
+    /* Eclipse Upgrade - Celestial Occultation & Solar Corona Styles */
+    .eclipse-buy-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: rgba(35, 0, 0, 0.9);
+      border: 1.5px solid rgba(255, 60, 60, 0.6);
+      color: #ffe6e6;
+      padding: 0.6rem 1.1rem;
+      border-radius: 10px;
+      font-family: 'Jacquard 12', 'Times New Roman', serif;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.8);
+      transition: all 0.2s ease;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .eclipse-buy-btn:hover:not(:disabled) {
+      background: rgba(95, 0, 0, 0.98);
+      border-color: #ff3333;
+      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
+    }
+    .eclipse-buy-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      border-color: rgba(255, 255, 255, 0.2);
+      color: #888;
+    }
+    .eclipse-cps-text {
+      font-size: 24px;
+      color: rgba(255, 170, 170, 0.85);
+      letter-spacing: 1px;
+      margin-top: -0.2rem;
+    }
+    .eclipse-manifestation {
+      position: fixed;
+      pointer-events: none;
+      z-index: 10004;
+      transform: translate(-50%, -50%);
+      width: 0;
+      height: 0;
+    }
+    .eclipse-dark-core {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: var(--core-size, 160px);
+      height: var(--core-size, 160px);
+      margin-left: calc(var(--core-size, 160px) * -0.5);
+      margin-top: calc(var(--core-size, 160px) * -0.5);
+      border-radius: 50%;
+      background: #000000;
+      box-shadow:
+        0 0 15px 4px #ff1a35,
+        0 0 45px 16px rgba(255, 0, 30, 0.85),
+        0 0 90px 30px rgba(180, 0, 0, 0.5),
+        inset 0 0 25px 8px rgba(255, 0, 40, 0.6);
+      animation: eclipseCoreAnim 0.72s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes eclipseCoreAnim {
+      0% {
+        opacity: 0;
+        transform: scale(0.2) rotate(-20deg);
+        filter: brightness(2);
+      }
+      25% {
+        opacity: 0.95;
+        transform: scale(1.05) rotate(5deg);
+      }
+      50% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+        box-shadow:
+          0 0 25px 8px #ffffff,
+          0 0 65px 24px #ff0033,
+          0 0 120px 45px rgba(255, 0, 0, 0.75),
+          inset 0 0 35px 12px rgba(255, 50, 50, 0.9);
+      }
+      80% {
+        opacity: 0.9;
+        transform: scale(1.08) rotate(3deg);
+      }
+      100% {
+        opacity: 0;
+        transform: scale(1.25) rotate(8deg);
+      }
+    }
+    .eclipse-flare-ray {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: var(--ray-len, 120px);
+      margin-left: -2px;
+      margin-top: calc(var(--ray-len, 120px) * -1);
+      transform-origin: bottom center;
+      background: linear-gradient(to top, #ffffff 0%, rgba(255, 40, 60, 0.9) 40%, rgba(180, 0, 30, 0) 100%);
+      filter: drop-shadow(0 0 8px rgba(255, 0, 40, 0.95));
+      animation: eclipseRayAnim 0.65s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+    }
+    @keyframes eclipseRayAnim {
+      0% {
+        opacity: 0;
+        transform: rotate(var(--angle)) scaleY(0.2);
+      }
+      35% {
+        opacity: 1;
+        transform: rotate(calc(var(--angle) + 8deg)) scaleY(1.15);
+      }
+      70% {
+        opacity: 0.8;
+        transform: rotate(calc(var(--angle) + 15deg)) scaleY(1);
+      }
+      100% {
+        opacity: 0;
+        transform: rotate(calc(var(--angle) + 20deg)) scaleY(0.4);
+      }
+    }
+    .eclipse-shockwave {
+      position: fixed;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 3.5px solid #ff2244;
+      background: radial-gradient(circle, rgba(255, 0, 40, 0.6) 0%, rgba(40, 0, 0, 0.4) 40%, transparent 75%);
+      transform: translate(-50%, -50%) scale(0.2);
+      z-index: 10003;
+      pointer-events: none;
+      box-shadow: 0 0 40px 15px rgba(255, 0, 30, 0.95);
+      animation: eclipseWaveAnim 0.6s cubic-bezier(0.12, 0.8, 0.32, 1) forwards;
+    }
+    @keyframes eclipseWaveAnim {
+      0% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+      20% { opacity: 1; }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(4.6); }
+    }
+    .eclipse-spark {
+      position: fixed;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow: 0 0 12px 5px #ff1133;
+      pointer-events: none;
+      z-index: 10005;
+      animation: eclipseSparkFly var(--spark-dur, 0.6s) ease-out forwards;
+    }
+    @keyframes eclipseSparkFly {
+      0% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1.6);
+      }
+      60% {
+        opacity: 0.9;
+        transform: translate(var(--sx), var(--sy)) scale(1.1);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(calc(var(--sx) * 1.3), calc(var(--sy) * 1.3)) scale(0.2);
+      }
+    }
     /* Reset Confirmation Modal */
     .reset-modal-overlay {
       position: fixed;
@@ -821,22 +1190,66 @@
       <img src="CLICKER.cur" class="clicker-mouse-icon" alt="mouse clicker" />
       <span class="clicker-count-text" id="starCountDisplay">0</span>
     </div>
-    <button class="clicker-buy-btn" id="buyClickerBtn">
-      <span>+1 mouse (<span id="autoClickerCost">100</span>)</span>
-    </button>
+    <div class="upgrade-row" id="mouseRow">
+      <button class="upgrade-eye-btn" id="toggleMouseBtn" aria-label="Hide mouse" title="Hide/show mouse animations">
+        <svg class="pixel-eye-svg eye-open" viewBox="0 0 16 16" shape-rendering="crispEdges"><path fill="#ff2a3d" d="M5 4h1v1h-1z M6 4h1v1h-1z M7 4h1v1h-1z M8 4h1v1h-1z M9 4h1v1h-1z M10 4h1v1h-1z M3 5h1v1h-1z M4 5h1v1h-1z M11 5h1v1h-1z M12 5h1v1h-1z M2 6h1v1h-1z M13 6h1v1h-1z M1 7h1v1h-1z M14 7h1v1h-1z M7 6h1v1h-1z M8 6h1v1h-1z M6 7h1v1h-1z M9 7h1v1h-1z M7 8h1v1h-1z M8 8h1v1h-1z M2 8h1v1h-1z M13 8h1v1h-1z M3 9h1v1h-1z M4 9h1v1h-1z M11 9h1v1h-1z M12 9h1v1h-1z M5 10h1v1h-1z M6 10h1v1h-1z M7 10h1v1h-1z M8 10h1v1h-1z M9 10h1v1h-1z M10 10h1v1h-1z"/></svg>
+        <svg class="pixel-eye-svg eye-closed" viewBox="0 0 16 16" shape-rendering="crispEdges"><path fill="#ff2a3d" d="M1 7h1v1h-1z M14 7h1v1h-1z M2 7h1v1h-1z M13 7h1v1h-1z M3 8h1v1h-1z M12 8h1v1h-1z M4 8h1v1h-1z M11 8h1v1h-1z M5 9h1v1h-1z M6 9h1v1h-1z M7 9h1v1h-1z M8 9h1v1h-1z M9 9h1v1h-1z M10 9h1v1h-1z M4 10h1v1h-1z M11 10h1v1h-1z M6 11h1v1h-1z M9 11h1v1h-1z"/></svg>
+      </button>
+      <button class="clicker-buy-btn" id="buyClickerBtn">
+        <span>+1 mouse (<span id="autoClickerCost">100</span>)</span>
+      </button>
+    </div>
     <div class="clicker-cps-text" id="cpsDisplay">0 clickers (0/s)</div>
-    <button class="laser-buy-btn" id="buyLaserBtn" style="display:none;">
-      <span>+1 laser (<span id="laserCost">1000</span>)</span>
-    </button>
+    <div class="upgrade-row" id="laserRow" style="display:none;">
+      <button class="upgrade-eye-btn" id="toggleLaserBtn" aria-label="Hide laser" title="Hide/show laser animations">
+        <svg class="pixel-eye-svg eye-open" viewBox="0 0 16 16" shape-rendering="crispEdges"><path fill="#ff2a3d" d="M5 4h1v1h-1z M6 4h1v1h-1z M7 4h1v1h-1z M8 4h1v1h-1z M9 4h1v1h-1z M10 4h1v1h-1z M3 5h1v1h-1z M4 5h1v1h-1z M11 5h1v1h-1z M12 5h1v1h-1z M2 6h1v1h-1z M13 6h1v1h-1z M1 7h1v1h-1z M14 7h1v1h-1z M7 6h1v1h-1z M8 6h1v1h-1z M6 7h1v1h-1z M9 7h1v1h-1z M7 8h1v1h-1z M8 8h1v1h-1z M2 8h1v1h-1z M13 8h1v1h-1z M3 9h1v1h-1z M4 9h1v1h-1z M11 9h1v1h-1z M12 9h1v1h-1z M5 10h1v1h-1z M6 10h1v1h-1z M7 10h1v1h-1z M8 10h1v1h-1z M9 10h1v1h-1z M10 10h1v1h-1z"/></svg>
+        <svg class="pixel-eye-svg eye-closed" viewBox="0 0 16 16" shape-rendering="crispEdges"><path fill="#ff2a3d" d="M1 7h1v1h-1z M14 7h1v1h-1z M2 7h1v1h-1z M13 7h1v1h-1z M3 8h1v1h-1z M12 8h1v1h-1z M4 8h1v1h-1z M11 8h1v1h-1z M5 9h1v1h-1z M6 9h1v1h-1z M7 9h1v1h-1z M8 9h1v1h-1z M9 9h1v1h-1z M10 9h1v1h-1z M4 10h1v1h-1z M11 10h1v1h-1z M6 11h1v1h-1z M9 11h1v1h-1z"/></svg>
+      </button>
+      <button class="laser-buy-btn" id="buyLaserBtn">
+        <span>+1 laser (<span id="laserCost">1000</span>)</span>
+      </button>
+    </div>
     <div class="laser-cps-text" id="laserDisplay" style="display:none;">0 lasers (0/s)</div>
-    <button class="eye-buy-btn" id="buyEyeBtn" style="display:none;">
-      <span>+1 eye (<span id="eyeCost">6000</span>)</span>
-    </button>
+    <div class="upgrade-row" id="eyeRow" style="display:none;">
+      <button class="upgrade-eye-btn" id="toggleEyeBtn" aria-label="Hide eye" title="Hide/show eye animations">
+        <svg class="pixel-eye-svg eye-open" viewBox="0 0 16 16" shape-rendering="crispEdges"><path fill="#ff2a3d" d="M5 4h1v1h-1z M6 4h1v1h-1z M7 4h1v1h-1z M8 4h1v1h-1z M9 4h1v1h-1z M10 4h1v1h-1z M3 5h1v1h-1z M4 5h1v1h-1z M11 5h1v1h-1z M12 5h1v1h-1z M2 6h1v1h-1z M13 6h1v1h-1z M1 7h1v1h-1z M14 7h1v1h-1z M7 6h1v1h-1z M8 6h1v1h-1z M6 7h1v1h-1z M9 7h1v1h-1z M7 8h1v1h-1z M8 8h1v1h-1z M2 8h1v1h-1z M13 8h1v1h-1z M3 9h1v1h-1z M4 9h1v1h-1z M11 9h1v1h-1z M12 9h1v1h-1z M5 10h1v1h-1z M6 10h1v1h-1z M7 10h1v1h-1z M8 10h1v1h-1z M9 10h1v1h-1z M10 10h1v1h-1z"/></svg>
+        <svg class="pixel-eye-svg eye-closed" viewBox="0 0 16 16" shape-rendering="crispEdges"><path fill="#ff2a3d" d="M1 7h1v1h-1z M14 7h1v1h-1z M2 7h1v1h-1z M13 7h1v1h-1z M3 8h1v1h-1z M12 8h1v1h-1z M4 8h1v1h-1z M11 8h1v1h-1z M5 9h1v1h-1z M6 9h1v1h-1z M7 9h1v1h-1z M8 9h1v1h-1z M9 9h1v1h-1z M10 9h1v1h-1z M4 10h1v1h-1z M11 10h1v1h-1z M6 11h1v1h-1z M9 11h1v1h-1z"/></svg>
+      </button>
+      <button class="eye-buy-btn" id="buyEyeBtn">
+        <span>+1 eye (<span id="eyeCost">5500</span>)</span>
+      </button>
+    </div>
     <div class="eye-cps-text" id="eyeDisplay" style="display:none;">0 eyes (0/s)</div>
-    <button class="hands-buy-btn" id="buyHandsBtn" style="display:none;">
-      <span>+1 hands (<span id="handsCost">24000</span>)</span>
-    </button>
+    <div class="upgrade-row" id="handsRow" style="display:none;">
+      <button class="upgrade-eye-btn" id="toggleHandsBtn" aria-label="Hide hands" title="Hide/show hands animations">
+        <svg class="pixel-eye-svg eye-open" viewBox="0 0 16 16" shape-rendering="crispEdges"><path fill="#ff2a3d" d="M5 4h1v1h-1z M6 4h1v1h-1z M7 4h1v1h-1z M8 4h1v1h-1z M9 4h1v1h-1z M10 4h1v1h-1z M3 5h1v1h-1z M4 5h1v1h-1z M11 5h1v1h-1z M12 5h1v1h-1z M2 6h1v1h-1z M13 6h1v1h-1z M1 7h1v1h-1z M14 7h1v1h-1z M7 6h1v1h-1z M8 6h1v1h-1z M6 7h1v1h-1z M9 7h1v1h-1z M7 8h1v1h-1z M8 8h1v1h-1z M2 8h1v1h-1z M13 8h1v1h-1z M3 9h1v1h-1z M4 9h1v1h-1z M11 9h1v1h-1z M12 9h1v1h-1z M5 10h1v1h-1z M6 10h1v1h-1z M7 10h1v1h-1z M8 10h1v1h-1z M9 10h1v1h-1z M10 10h1v1h-1z"/></svg>
+        <svg class="pixel-eye-svg eye-closed" viewBox="0 0 16 16" shape-rendering="crispEdges"><path fill="#ff2a3d" d="M1 7h1v1h-1z M14 7h1v1h-1z M2 7h1v1h-1z M13 7h1v1h-1z M3 8h1v1h-1z M12 8h1v1h-1z M4 8h1v1h-1z M11 8h1v1h-1z M5 9h1v1h-1z M6 9h1v1h-1z M7 9h1v1h-1z M8 9h1v1h-1z M9 9h1v1h-1z M10 9h1v1h-1z M4 10h1v1h-1z M11 10h1v1h-1z M6 11h1v1h-1z M9 11h1v1h-1z"/></svg>
+      </button>
+      <button class="hands-buy-btn" id="buyHandsBtn">
+        <span>+1 hands (<span id="handsCost">26000</span>)</span>
+      </button>
+    </div>
     <div class="hands-cps-text" id="handsDisplay" style="display:none;">0 hands (0/s)</div>
+    <div class="upgrade-row" id="meteorRow" style="display:none;">
+      <button class="upgrade-eye-btn" id="toggleMeteorBtn" aria-label="Hide meteor" title="Hide/show meteor animations">
+        <svg class="pixel-eye-svg eye-open" viewBox="0 0 16 16" shape-rendering="crispEdges"><path fill="#ff2a3d" d="M5 4h1v1h-1z M6 4h1v1h-1z M7 4h1v1h-1z M8 4h1v1h-1z M9 4h1v1h-1z M10 4h1v1h-1z M3 5h1v1h-1z M4 5h1v1h-1z M11 5h1v1h-1z M12 5h1v1h-1z M2 6h1v1h-1z M13 6h1v1h-1z M1 7h1v1h-1z M14 7h1v1h-1z M7 6h1v1h-1z M8 6h1v1h-1z M6 7h1v1h-1z M9 7h1v1h-1z M7 8h1v1h-1z M8 8h1v1h-1z M2 8h1v1h-1z M13 8h1v1h-1z M3 9h1v1h-1z M4 9h1v1h-1z M11 9h1v1h-1z M12 9h1v1h-1z M5 10h1v1h-1z M6 10h1v1h-1z M7 10h1v1h-1z M8 10h1v1h-1z M9 10h1v1h-1z M10 10h1v1h-1z"/></svg>
+        <svg class="pixel-eye-svg eye-closed" viewBox="0 0 16 16" shape-rendering="crispEdges"><path fill="#ff2a3d" d="M1 7h1v1h-1z M14 7h1v1h-1z M2 7h1v1h-1z M13 7h1v1h-1z M3 8h1v1h-1z M12 8h1v1h-1z M4 8h1v1h-1z M11 8h1v1h-1z M5 9h1v1h-1z M6 9h1v1h-1z M7 9h1v1h-1z M8 9h1v1h-1z M9 9h1v1h-1z M10 9h1v1h-1z M4 10h1v1h-1z M11 10h1v1h-1z M6 11h1v1h-1z M9 11h1v1h-1z"/></svg>
+      </button>
+      <button class="meteor-buy-btn" id="buyMeteorBtn">
+        <span>+1 meteor (<span id="meteorCost">110000</span>)</span>
+      </button>
+    </div>
+    <div class="meteor-cps-text" id="meteorDisplay" style="display:none;">0 meteors (0/s)</div>
+    <div class="upgrade-row" id="eclipseRow" style="display:none;">
+      <button class="upgrade-eye-btn" id="toggleEclipseBtn" aria-label="Hide eclipse" title="Hide/show eclipse animations">
+        <svg class="pixel-eye-svg eye-open" viewBox="0 0 16 16" shape-rendering="crispEdges"><path fill="#ff2a3d" d="M5 4h1v1h-1z M6 4h1v1h-1z M7 4h1v1h-1z M8 4h1v1h-1z M9 4h1v1h-1z M10 4h1v1h-1z M3 5h1v1h-1z M4 5h1v1h-1z M11 5h1v1h-1z M12 5h1v1h-1z M2 6h1v1h-1z M13 6h1v1h-1z M1 7h1v1h-1z M14 7h1v1h-1z M7 6h1v1h-1z M8 6h1v1h-1z M6 7h1v1h-1z M9 7h1v1h-1z M7 8h1v1h-1z M8 8h1v1h-1z M2 8h1v1h-1z M13 8h1v1h-1z M3 9h1v1h-1z M4 9h1v1h-1z M11 9h1v1h-1z M12 9h1v1h-1z M5 10h1v1h-1z M6 10h1v1h-1z M7 10h1v1h-1z M8 10h1v1h-1z M9 10h1v1h-1z M10 10h1v1h-1z"/></svg>
+        <svg class="pixel-eye-svg eye-closed" viewBox="0 0 16 16" shape-rendering="crispEdges"><path fill="#ff2a3d" d="M1 7h1v1h-1z M14 7h1v1h-1z M2 7h1v1h-1z M13 7h1v1h-1z M3 8h1v1h-1z M12 8h1v1h-1z M4 8h1v1h-1z M11 8h1v1h-1z M5 9h1v1h-1z M6 9h1v1h-1z M7 9h1v1h-1z M8 9h1v1h-1z M9 9h1v1h-1z M10 9h1v1h-1z M4 10h1v1h-1z M11 10h1v1h-1z M6 11h1v1h-1z M9 11h1v1h-1z"/></svg>
+      </button>
+      <button class="eclipse-buy-btn" id="buyEclipseBtn">
+        <span>+1 eclipse (<span id="eclipseCost">450000</span>)</span>
+      </button>
+    </div>
+    <div class="eclipse-cps-text" id="eclipseDisplay" style="display:none;">0 eclipses (0/s)</div>
   </div>
 
   <!-- Total CPS HUD in bottom left -->
@@ -889,6 +1302,70 @@
       const handsCostDisplay = document.getElementById('handsCost');
       const handsDisplay = document.getElementById('handsDisplay');
 
+      // Meteor refs
+      const buyMeteorBtn = document.getElementById('buyMeteorBtn');
+      const meteorCostDisplay = document.getElementById('meteorCost');
+      const meteorDisplay = document.getElementById('meteorDisplay');
+
+      // Eclipse refs
+      const buyEclipseBtn = document.getElementById('buyEclipseBtn');
+      const eclipseCostDisplay = document.getElementById('eclipseCost');
+      const eclipseDisplay = document.getElementById('eclipseDisplay');
+
+      // Upgrade rows for unlock visibility
+      const mouseRow = document.getElementById('mouseRow');
+      const laserRow = document.getElementById('laserRow');
+      const eyeRow = document.getElementById('eyeRow');
+      const handsRow = document.getElementById('handsRow');
+      const meteorRow = document.getElementById('meteorRow');
+      const eclipseRow = document.getElementById('eclipseRow');
+
+      // Upgrade visual visibility state (default: all visible)
+      const upgradeVis = {
+        mouse: true,
+        laser: true,
+        eye: true,
+        hands: true,
+        meteor: true,
+        eclipse: true
+      };
+
+      const eyeToggleBtns = {
+        mouse: document.getElementById('toggleMouseBtn'),
+        laser: document.getElementById('toggleLaserBtn'),
+        eye: document.getElementById('toggleEyeBtn'),
+        hands: document.getElementById('toggleHandsBtn'),
+        meteor: document.getElementById('toggleMeteorBtn'),
+        eclipse: document.getElementById('toggleEclipseBtn')
+      };
+
+      function updateEyeToggleBtns() {
+        for (const key in eyeToggleBtns) {
+          const btn = eyeToggleBtns[key];
+          if (!btn) continue;
+          if (upgradeVis[key]) {
+            btn.classList.remove('is-hidden');
+            btn.setAttribute('aria-label', `Hide ${key}`);
+          } else {
+            btn.classList.add('is-hidden');
+            btn.setAttribute('aria-label', `Show ${key}`);
+          }
+        }
+      }
+
+      function setupEyeToggle(key) {
+        const btn = eyeToggleBtns[key];
+        if (!btn) return;
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          upgradeVis[key] = !upgradeVis[key];
+          updateEyeToggleBtns();
+          saveGame();
+        });
+      }
+
+      for (const k in eyeToggleBtns) setupEyeToggle(k);
+
       // Reset modal refs & i-dot
       const iDot = document.getElementById('iDot');
       const resetModal = document.getElementById('resetModal');
@@ -923,17 +1400,29 @@
       let laserCurrentCost = 1000;
       let laserInterval = null;
 
-      // Tier 3: Eye sword slash (+50 clicks/s) - Base cost 6000, unlocks at 4500
+      // Tier 3: Eye sword slash (+50 clicks/s) - Base cost 5500, unlocks at 4000
       let eyeCount = 0;
-      let eyeBaseCost = 6000;
-      let eyeCurrentCost = 6000;
+      let eyeBaseCost = 5500;
+      let eyeCurrentCost = 5500;
       let eyeInterval = null;
 
-      // Tier 4: Hands crush (+160 clicks/s) - Base cost 24000, unlocks at 15000
+      // Tier 4: Hands crush (+200 clicks/s) - Base cost 26000, unlocks at 18000
       let handsCount = 0;
-      let handsBaseCost = 24000;
-      let handsCurrentCost = 24000;
+      let handsBaseCost = 26000;
+      let handsCurrentCost = 26000;
       let handsInterval = null;
+
+      // Tier 5: Meteor strike (+750 clicks/s) - Base cost 110000, unlocks at 75000
+      let meteorCount = 0;
+      let meteorBaseCost = 110000;
+      let meteorCurrentCost = 110000;
+      let meteorInterval = null;
+
+      // Tier 6: Eclipse occultation (+2500 clicks/s) - Base cost 450000, unlocks at 280000
+      let eclipseCount = 0;
+      let eclipseBaseCost = 450000;
+      let eclipseCurrentCost = 450000;
+      let eclipseInterval = null;
 
       const messageSection = document.querySelector('.message-section');
 
@@ -970,7 +1459,10 @@
             autoClickers,
             laserCount,
             eyeCount,
-            handsCount
+            handsCount,
+            meteorCount,
+            eclipseCount,
+            upgradeVis
           };
           localStorage.setItem(SAVE_KEY, JSON.stringify(data));
         } catch (err) {}
@@ -996,16 +1488,29 @@
             if (typeof data.laserCount === 'number') laserCount = Math.max(0, data.laserCount);
             if (typeof data.eyeCount === 'number') eyeCount = Math.max(0, data.eyeCount);
             if (typeof data.handsCount === 'number') handsCount = Math.max(0, data.handsCount);
+            if (typeof data.meteorCount === 'number') meteorCount = Math.max(0, data.meteorCount);
+            if (typeof data.eclipseCount === 'number') eclipseCount = Math.max(0, data.eclipseCount);
+
+            if (data.upgradeVis && typeof data.upgradeVis === 'object') {
+              for (const k of ['mouse', 'laser', 'eye', 'hands', 'meteor', 'eclipse']) {
+                if (typeof data.upgradeVis[k] === 'boolean') upgradeVis[k] = data.upgradeVis[k];
+              }
+            }
+            updateEyeToggleBtns();
 
             autoClickerCost = Math.round(autoClickerBaseCost * Math.pow(1.15, autoClickers));
             laserCurrentCost = Math.round(laserBaseCost * Math.pow(1.15, laserCount));
             eyeCurrentCost = Math.round(eyeBaseCost * Math.pow(1.15, eyeCount));
             handsCurrentCost = Math.round(handsBaseCost * Math.pow(1.15, handsCount));
+            meteorCurrentCost = Math.round(meteorBaseCost * Math.pow(1.15, meteorCount));
+            eclipseCurrentCost = Math.round(eclipseBaseCost * Math.pow(1.15, eclipseCount));
 
             if (autoClickers > 0) startAutoClickerLoop();
             if (laserCount > 0) startLaserLoop();
             if (eyeCount > 0) startEyeLoop();
             if (handsCount > 0) startHandsLoop();
+            if (meteorCount > 0) startMeteorLoop();
+            if (eclipseCount > 0) startEclipseLoop();
 
             if (totalClicksLifetime >= 100) {
               popup.classList.remove('fade-out');
@@ -1022,6 +1527,8 @@
         if (laserInterval) { clearInterval(laserInterval); laserInterval = null; }
         if (eyeInterval) { clearInterval(eyeInterval); eyeInterval = null; }
         if (handsInterval) { clearInterval(handsInterval); handsInterval = null; }
+        if (meteorInterval) { clearInterval(meteorInterval); meteorInterval = null; }
+        if (eclipseInterval) { clearInterval(eclipseInterval); eclipseInterval = null; }
         resetModal.classList.add('open');
         resetModal.removeAttribute('aria-hidden');
       }
@@ -1032,6 +1539,8 @@
         if (laserCount > 0) startLaserLoop();
         if (eyeCount > 0) startEyeLoop();
         if (handsCount > 0) startHandsLoop();
+        if (meteorCount > 0) startMeteorLoop();
+        if (eclipseCount > 0) startEclipseLoop();
         resetModal.classList.remove('open');
         resetModal.setAttribute('aria-hidden', 'true');
       }
@@ -1044,6 +1553,8 @@
         if (laserInterval) { clearInterval(laserInterval); laserInterval = null; }
         if (eyeInterval) { clearInterval(eyeInterval); eyeInterval = null; }
         if (handsInterval) { clearInterval(handsInterval); handsInterval = null; }
+        if (meteorInterval) { clearInterval(meteorInterval); meteorInterval = null; }
+        if (eclipseInterval) { clearInterval(eclipseInterval); eclipseInterval = null; }
         if (hideTimeout) clearTimeout(hideTimeout);
         if (spreeDecayTimer) clearTimeout(spreeDecayTimer);
         if (saveTimeout) clearTimeout(saveTimeout);
@@ -1053,6 +1564,10 @@
         laserCount = 0;
         eyeCount = 0;
         handsCount = 0;
+        meteorCount = 0;
+        eclipseCount = 0;
+        for (const k in upgradeVis) upgradeVis[k] = true;
+        updateEyeToggleBtns();
         try {
           localStorage.removeItem(SAVE_KEY);
           localStorage.clear();
@@ -1088,7 +1603,7 @@
         buyBtn.disabled = starCurrency < autoClickerCost;
 
         // Total CPS count for bottom left HUD
-        const totalCps = (autoClickers * 1) + (laserCount * 10) + (eyeCount * 50) + (handsCount * 160);
+        const totalCps = (autoClickers * 1) + (laserCount * 10) + (eyeCount * 50) + (handsCount * 200) + (meteorCount * 750) + (eclipseCount * 2500);
         totalCpsDisplay.textContent = `total: ${totalCps} clicks/s`;
 
         // Clicker HUD game unlocks at 100 clicks
@@ -1099,32 +1614,50 @@
           totalCpsHud.removeAttribute('aria-hidden');
         }
 
-        // Show laser button once player hits 750 lifetime clicks
+        // Show laser row once player hits 750 lifetime clicks
         if (totalClicksLifetime >= 750) {
-          buyLaserBtn.style.display = '';
+          laserRow.style.display = 'flex';
           laserDisplay.style.display = '';
         }
         laserCostDisplay.textContent = laserCurrentCost;
         laserDisplay.textContent = `${laserCount} lasers (${laserCount * 10}/s)`;
         buyLaserBtn.disabled = starCurrency < laserCurrentCost;
 
-        // Show eye button once player hits 4500 lifetime clicks
-        if (totalClicksLifetime >= 4500) {
-          buyEyeBtn.style.display = '';
+        // Show eye row once player hits 4000 lifetime clicks
+        if (totalClicksLifetime >= 4000) {
+          eyeRow.style.display = 'flex';
           eyeDisplay.style.display = '';
         }
         eyeCostDisplay.textContent = eyeCurrentCost;
         eyeDisplay.textContent = `${eyeCount} eyes (${eyeCount * 50}/s)`;
         buyEyeBtn.disabled = starCurrency < eyeCurrentCost;
 
-        // Show hands button once player hits 15000 lifetime clicks
-        if (totalClicksLifetime >= 15000) {
-          buyHandsBtn.style.display = '';
+        // Show hands row once player hits 18000 lifetime clicks
+        if (totalClicksLifetime >= 18000) {
+          handsRow.style.display = 'flex';
           handsDisplay.style.display = '';
         }
         handsCostDisplay.textContent = handsCurrentCost;
-        handsDisplay.textContent = `${handsCount} hands (${handsCount * 160}/s)`;
+        handsDisplay.textContent = `${handsCount} hands (${handsCount * 200}/s)`;
         buyHandsBtn.disabled = starCurrency < handsCurrentCost;
+
+        // Show meteor row once player hits 75000 lifetime clicks
+        if (totalClicksLifetime >= 75000) {
+          meteorRow.style.display = 'flex';
+          meteorDisplay.style.display = '';
+        }
+        meteorCostDisplay.textContent = meteorCurrentCost;
+        meteorDisplay.textContent = `${meteorCount} meteors (${meteorCount * 750}/s)`;
+        buyMeteorBtn.disabled = starCurrency < meteorCurrentCost;
+
+        // Show eclipse row once player hits 280000 lifetime clicks
+        if (totalClicksLifetime >= 280000) {
+          eclipseRow.style.display = 'flex';
+          eclipseDisplay.style.display = '';
+        }
+        eclipseCostDisplay.textContent = eclipseCurrentCost;
+        eclipseDisplay.textContent = `${eclipseCount} eclipses (${eclipseCount * 2500}/s)`;
+        buyEclipseBtn.disabled = starCurrency < eclipseCurrentCost;
 
         queueSave();
       }
@@ -1138,7 +1671,7 @@
       function scheduleFadeOut() {
         clearTimeout(hideTimeout);
         hideTimeout = setTimeout(() => {
-          if (autoClickers === 0 && laserCount === 0 && eyeCount === 0 && totalClicksLifetime < 100) {
+          if (autoClickers === 0 && laserCount === 0 && eyeCount === 0 && handsCount === 0 && meteorCount === 0 && eclipseCount === 0 && totalClicksLifetime < 100) {
             popup.classList.remove('show');
             popup.classList.add('fade-out');
             clearStars();
@@ -1276,7 +1809,9 @@
           spawnMiniStars(starsToSpawn);
         } else {
           // Auto-clicker triggers the flying click animation without spinning
-          spawnFlyingMouse();
+          if (upgradeVis.mouse) {
+            spawnFlyingMouse();
+          }
           triggerStarBounce();
         }
 
@@ -1343,8 +1878,8 @@
         totalClicksLifetime += 10;
         updateClickerUI();
 
-        // Skip visual particle effects if tab is in background to save battery/CPU
-        if (document.hidden) return;
+        // Skip visual particle effects if tab is in background or hidden to save battery/CPU
+        if (document.hidden || !upgradeVis.laser) return;
 
         // Multiple spawn positions strictly OUTSIDE the viewport near bottom right
         let startX, startY;
@@ -1459,7 +1994,7 @@
         totalClicksLifetime += 50;
         updateClickerUI();
 
-        if (document.hidden) return;
+        if (document.hidden || !upgradeVis.eye) return;
 
         // Randomly pick one of the 3 slash types from the desktop folders (RED SLASH 1, 2, 3)
         const slashType = Math.floor(Math.random() * 3) + 1; // 1, 2, or 3
@@ -1589,11 +2124,11 @@
         const starCenterX = popupRect.left + popupRect.width / 2;
         const starCenterY = popupRect.top + popupRect.height / 2;
 
-        starCurrency += 160;
-        totalClicksLifetime += 160;
+        starCurrency += 200;
+        totalClicksLifetime += 200;
         updateClickerUI();
 
-        if (document.hidden) return;
+        if (document.hidden || !upgradeVis.hands) return;
 
         const handsContainer = document.createElement('div');
         handsContainer.className = 'pixel-hands-container';
@@ -1647,6 +2182,264 @@
           handsCount++;
           handsCurrentCost = Math.round(handsBaseCost * Math.pow(1.15, handsCount));
           startHandsLoop();
+          updateClickerUI();
+          saveGame();
+        }
+      });
+
+      // --- METEOR STRIKE LOGIC (50000 clicks, +500 clicks per meteor) ---
+      function spawnMeteorImpact(ix, iy) {
+        if (document.hidden || isPaused) return;
+
+        // Impact flash
+        const flash = document.createElement('div');
+        flash.className = 'meteor-impact-flash';
+        flash.style.left = `${ix}px`;
+        flash.style.top = `${iy}px`;
+        document.body.appendChild(flash);
+        setTimeout(() => {
+          if (flash.parentNode) flash.parentNode.removeChild(flash);
+        }, 320);
+
+        // Shockwave ring
+        const ring = document.createElement('div');
+        ring.className = 'meteor-blast-ring';
+        ring.style.left = `${ix}px`;
+        ring.style.top = `${iy}px`;
+        document.body.appendChild(ring);
+        setTimeout(() => {
+          if (ring.parentNode) ring.parentNode.removeChild(ring);
+        }, 420);
+
+        // Flying burning embers
+        if (document.querySelectorAll('.meteor-ember').length < 24) {
+          const emberCount = 6 + Math.floor(Math.random() * 4);
+          for (let i = 0; i < emberCount; i++) {
+            const ember = document.createElement('div');
+            ember.className = 'meteor-ember';
+            ember.style.left = `${ix}px`;
+            ember.style.top = `${iy}px`;
+
+            const ang = Math.random() * Math.PI * 2;
+            const edist = 45 + Math.random() * 110;
+            const ex = Math.cos(ang) * edist;
+            const ey = Math.sin(ang) * edist - 20;
+            const etime = 0.35 + Math.random() * 0.3;
+
+            ember.style.setProperty('--ex', `${ex}px`);
+            ember.style.setProperty('--ey', `${ey}px`);
+            ember.style.setProperty('--ember-time', `${etime.toFixed(2)}s`);
+
+            document.body.appendChild(ember);
+            setTimeout(() => {
+              if (ember.parentNode) ember.parentNode.removeChild(ember);
+            }, (etime + 0.1) * 1000);
+          }
+        }
+
+        // Star chunks, star crush reaction and bounce
+        spawnStarChunks(ix, iy);
+        triggerStarCrush();
+      }
+
+      function fireMeteor() {
+        if (!popup.classList.contains('show') || isPaused) return;
+
+        const popupRect = popupImg.getBoundingClientRect();
+        const starCenterX = popupRect.left + popupRect.width / 2;
+        const starCenterY = popupRect.top + popupRect.height / 2;
+
+        starCurrency += 750;
+        totalClicksLifetime += 750;
+        updateClickerUI();
+
+        if (document.hidden || !upgradeVis.meteor) return;
+        if (document.querySelectorAll('.meteor-projectile').length >= 4) return;
+
+        // Target: jitter around the center of the star
+        const targetX = starCenterX + (Math.random() - 0.5) * (popupRect.width * 0.45);
+        const targetY = starCenterY + (Math.random() - 0.5) * (popupRect.height * 0.45);
+
+        // Spawn position: high up above the viewport, angled from left or right
+        const fromLeft = Math.random() < 0.5;
+        const startX = fromLeft
+          ? targetX - (250 + Math.random() * 300)
+          : targetX + (250 + Math.random() * 300);
+        const startY = -60 - Math.random() * 80;
+
+        const dx = targetX - startX;
+        const dy = targetY - startY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const angleRad = Math.atan2(dy, dx) - (Math.PI / 2);
+
+        const projectile = document.createElement('div');
+        projectile.className = 'meteor-projectile';
+        projectile.style.setProperty('--startX', `${startX}px`);
+        projectile.style.setProperty('--startY', `${startY}px`);
+        projectile.style.setProperty('--targetX', `${targetX}px`);
+        projectile.style.setProperty('--targetY', `${targetY}px`);
+        projectile.style.setProperty('--angle', `${angleRad}rad`);
+        projectile.style.setProperty('--tail-len', `${Math.min(dist * 0.4, 180)}px`);
+
+        const tail = document.createElement('div');
+        tail.className = 'meteor-tail';
+
+        const head = document.createElement('div');
+        head.className = 'meteor-body';
+
+        projectile.appendChild(tail);
+        projectile.appendChild(head);
+        document.body.appendChild(projectile);
+
+        // Flight time: 260ms
+        setTimeout(() => {
+          if (projectile.parentNode) projectile.parentNode.removeChild(projectile);
+          spawnMeteorImpact(targetX, targetY);
+        }, 260);
+      }
+
+      function startMeteorLoop() {
+        if (meteorInterval) clearInterval(meteorInterval);
+        if (meteorCount <= 0 || isPaused) return;
+        meteorInterval = setInterval(() => {
+          if (isPaused) return;
+          for (let i = 0; i < meteorCount; i++) {
+            setTimeout(() => {
+              if (!isPaused) fireMeteor();
+            }, (1000 / meteorCount) * i);
+          }
+        }, 1000);
+      }
+
+      buyMeteorBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (starCurrency >= meteorCurrentCost) {
+          starCurrency -= meteorCurrentCost;
+          meteorCount++;
+          meteorCurrentCost = Math.round(meteorBaseCost * Math.pow(1.15, meteorCount));
+          startMeteorLoop();
+          updateClickerUI();
+          saveGame();
+        }
+      });
+
+      // --- ECLIPSE OCCULTATION LOGIC (280000 clicks, +2500 clicks per eclipse) ---
+      function spawnEclipseVisuals(cx, cy, starSize) {
+        if (document.hidden || isPaused) return;
+
+        const manifestation = document.createElement('div');
+        manifestation.className = 'eclipse-manifestation';
+        manifestation.style.left = `${cx}px`;
+        manifestation.style.top = `${cy}px`;
+
+        const coreSize = Math.max(Math.round(starSize * 1.05), 150);
+        manifestation.style.setProperty('--core-size', `${coreSize}px`);
+
+        // Eclipsing black disk
+        const core = document.createElement('div');
+        core.className = 'eclipse-dark-core';
+        manifestation.appendChild(core);
+
+        // Radiant solar coronal flare rays
+        const rayCount = 8;
+        for (let i = 0; i < rayCount; i++) {
+          const ray = document.createElement('div');
+          ray.className = 'eclipse-flare-ray';
+          const angle = (360 / rayCount) * i + (Math.random() * 15 - 7.5);
+          const rayLen = Math.round(coreSize * (0.65 + Math.random() * 0.35));
+          ray.style.setProperty('--angle', `${angle}deg`);
+          ray.style.setProperty('--ray-len', `${rayLen}px`);
+          manifestation.appendChild(ray);
+        }
+
+        document.body.appendChild(manifestation);
+
+        // Climax impact at 220ms: gravitational shockwave, star chunks, squish and sparks
+        setTimeout(() => {
+          triggerStarCrush();
+
+          // Gravitational shockwave
+          const wave = document.createElement('div');
+          wave.className = 'eclipse-shockwave';
+          wave.style.left = `${cx}px`;
+          wave.style.top = `${cy}px`;
+          document.body.appendChild(wave);
+          setTimeout(() => {
+            if (wave.parentNode) wave.parentNode.removeChild(wave);
+          }, 600);
+
+          // Star chunks & sparks
+          spawnStarChunks(cx, cy);
+
+          if (document.querySelectorAll('.eclipse-spark').length < 24) {
+            const sparkCount = 8 + Math.floor(Math.random() * 5);
+            for (let i = 0; i < sparkCount; i++) {
+              const spark = document.createElement('div');
+              spark.className = 'eclipse-spark';
+              spark.style.left = `${cx}px`;
+              spark.style.top = `${cy}px`;
+
+              const ang = Math.random() * Math.PI * 2;
+              const sdist = 60 + Math.random() * 140;
+              const sx = Math.cos(ang) * sdist;
+              const sy = Math.sin(ang) * sdist;
+              const sdur = 0.45 + Math.random() * 0.25;
+
+              spark.style.setProperty('--sx', `${sx}px`);
+              spark.style.setProperty('--sy', `${sy}px`);
+              spark.style.setProperty('--spark-dur', `${sdur.toFixed(2)}s`);
+
+              document.body.appendChild(spark);
+              setTimeout(() => {
+                if (spark.parentNode) spark.parentNode.removeChild(spark);
+              }, (sdur + 0.1) * 1000);
+            }
+          }
+        }, 220);
+
+        // Remove manifestation when animation ends
+        setTimeout(() => {
+          if (manifestation.parentNode) manifestation.parentNode.removeChild(manifestation);
+        }, 750);
+      }
+
+      function fireEclipse() {
+        if (!popup.classList.contains('show') || isPaused) return;
+
+        const popupRect = popupImg.getBoundingClientRect();
+        const starCenterX = popupRect.left + popupRect.width / 2;
+        const starCenterY = popupRect.top + popupRect.height / 2;
+
+        starCurrency += 2500;
+        totalClicksLifetime += 2500;
+        updateClickerUI();
+
+        if (document.hidden || !upgradeVis.eclipse) return;
+        if (document.querySelectorAll('.eclipse-manifestation').length >= 2) return;
+
+        spawnEclipseVisuals(starCenterX, starCenterY, popupRect.width);
+      }
+
+      function startEclipseLoop() {
+        if (eclipseInterval) clearInterval(eclipseInterval);
+        if (eclipseCount <= 0 || isPaused) return;
+        eclipseInterval = setInterval(() => {
+          if (isPaused) return;
+          for (let i = 0; i < eclipseCount; i++) {
+            setTimeout(() => {
+              if (!isPaused) fireEclipse();
+            }, (1000 / eclipseCount) * i);
+          }
+        }, 1000);
+      }
+
+      buyEclipseBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (starCurrency >= eclipseCurrentCost) {
+          starCurrency -= eclipseCurrentCost;
+          eclipseCount++;
+          eclipseCurrentCost = Math.round(eclipseBaseCost * Math.pow(1.15, eclipseCount));
+          startEclipseLoop();
           updateClickerUI();
           saveGame();
         }
