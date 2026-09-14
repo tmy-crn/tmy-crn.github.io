@@ -2352,7 +2352,9 @@
           manifestation.appendChild(ray);
         }
 
-        document.body.appendChild(manifestation);
+        // Append inside the message section (the star's stacking context) so the
+        // eclipse renders behind the star rather than over the whole section.
+        messageSection.appendChild(manifestation);
 
         // Climax impact at 220ms: gravitational shockwave, star chunks, squish and sparks
         setTimeout(() => {
@@ -2363,7 +2365,7 @@
           wave.className = 'eclipse-shockwave';
           wave.style.left = `${cx}px`;
           wave.style.top = `${cy}px`;
-          document.body.appendChild(wave);
+          messageSection.appendChild(wave);
           setTimeout(() => {
             if (wave.parentNode) wave.parentNode.removeChild(wave);
           }, 600);
