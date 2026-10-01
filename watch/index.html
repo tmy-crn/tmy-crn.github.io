@@ -16,7 +16,10 @@
     #dot.on { background: #30d158; }
     #hero { min-height: 150px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 8px; color: #8e8e93; }
     #rate { font-size: 84px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
-    progress { width: 180px; accent-color: #30d158; }
+    progress { width: 100%; height: 6px; accent-color: #30d158; }
+    #clock { font-size: 22px; font-variant-numeric: tabular-nums; color: #8e8e93; min-height: 26px; }
+    #dur { display: flex; justify-content: space-between; align-items: center; background: #1c1c1e; border-radius: 16px; padding: 10px 16px; font-size: 15px; }
+    #dur select { background: #2c2c2e; color: #fff; border: 0; border-radius: 8px; padding: 6px 8px; font-size: 15px; }
     #face { width: 100%; height: 240px; background: #0b0b0c; border-radius: 16px; }
     #stats { display: none; gap: 12px; }
     .card { flex: 1; background: #1c1c1e; border-radius: 16px; padding: 14px 4px; text-align: center; }
@@ -35,24 +38,26 @@
     <div id="msg">lay the watch dial up on the table, touching the microphone</div>
     <div id="rate" hidden></div>
     <div id="unit" hidden>seconds per day</div>
-    <progress id="prog" max="20" value="0" hidden></progress>
   </div>
   <canvas id="face"></canvas>
+  <progress id="prog" max="1" value="0" hidden></progress>
+  <div id="clock"></div>
   <div id="stats">
     <div class="card"><small>beat rate</small><b id="bph"></b><i id="hz"></i></div>
     <div class="card"><small>beat error</small><b id="be"></b><i id="bel"></i></div>
     <div class="card"><small>amplitude</small><b id="amp"></b><i id="ampn"></i></div>
   </div>
   <div id="err"></div>
+  <label id="dur">capture time <select id="durSel"><option value="15">15 s</option><option value="30" selected>30 s</option><option value="60">1 min</option><option value="120">2 min</option><option value="300">5 min</option></select></label>
   <button id="go">start</button>
 </main>
 <script>
 // est-start
 const STD = [14400, 18000, 19800, 21600, 25200, 28800, 36000];
 
-function read(ticks, lift) {
+function read(ticks, lift, min = 20) {
   const t = ticks.map(k => k.time);
-  if (t.length < 20) return null;
+  if (t.length < min) return null;
   const spans = [];
   for (let i = 2; i < t.length; i++) spans.push((t[i] - t[i - 2]) / 2);
   spans.sort((a, b) => a - b);
@@ -141,32 +146,30 @@ function drawFace(r) {
   }
   g.beginPath(); g.moveTo(laneW, 0); g.lineTo(laneW, H); g.strokeStyle = '#3a3a3c'; g.stroke();
   if (!r) return;
-  const end = r.trace[r.trace.length - 1].time;
   g.fillStyle = '#30d158';
   for (const p of r.trace) {
     const w = (((p.dev * 1000 + SPAN / 2) % SPAN) + SPAN) % SPAN - SPAN / 2;
     const x = (p.even ? laneW / 2 : laneW * 1.5) + w / SPAN * laneW;
-    const y = 18 + (1 - (end - p.time) / 60) * (H - 24);
+    const y = 18 + Math.min(p.time / runDur, 1) * (H - 24);
     g.beginPath(); g.arc(x, y, 2.2, 0, 7); g.fill();
   }
 }
 
 const $ = id => document.getElementById(id);
-let ctx, stream, ticks = [];
+let ctx, stream, ticks = [], runDur = 30, startCtx = 0, timer = 0;
 
 
 function color(spd) { const a = Math.abs(spd); return a < 6 ? '#30d158' : a < 15 ? '#ffd60a' : '#ff453a'; }
 
 function render() {
-  const r = read(ticks, 52);
+  const r = read(ticks, 52, 6);
+  const full = !!r && ticks.length >= 20;
   drawFace(r);
-  $('rate').hidden = $('unit').hidden = !r;
-  $('stats').style.display = r ? 'flex' : 'none';
-  $('prog').hidden = !!r || !ctx;
-  $('prog').value = ticks.length;
-  $('msg').hidden = !!r;
+  $('rate').hidden = $('unit').hidden = !full;
+  $('stats').style.display = full ? 'flex' : 'none';
+  $('msg').hidden = full;
   $('msg').textContent = ctx ? 'listening, detecting beat rate' : 'lay the watch dial up on the table, touching the microphone';
-  if (!r) return;
+  if (!full) return;
   $('rate').textContent = (r.spd >= 0 ? '+' : '') + r.spd.toFixed(1);
   $('rate').style.color = color(r.spd);
   $('bph').textContent = r.bph.toLocaleString() + ' bph';
@@ -189,21 +192,38 @@ async function start() {
     const node = new AudioWorkletNode(ctx, 'd');
     node.port.onmessage = e => {
       ticks.push(...e.data);
-      const cutoff = ticks[ticks.length - 1].time - 60;
-      ticks = ticks.filter(k => k.time >= cutoff);
       render();
     };
     ctx.createMediaStreamSource(stream).connect(node);
+    startCtx = ctx.currentTime;
   } catch (e) {
     $('err').textContent = 'microphone unavailable: ' + e.message;
     return stop();
   }
   ticks = [];
+  runDur = +$('durSel').value;
+  $('durSel').disabled = true;
+  $('prog').hidden = false;
+  timer = setInterval(tick, 100);
+  tick();
   $('go').textContent = 'stop'; $('go').className = 'stop'; $('dot').className = 'on';
   render();
 }
 
+function tick() {
+  const el = ctx.currentTime - startCtx;
+  $('prog').max = runDur;
+  $('prog').value = Math.min(el, runDur);
+  const left = Math.max(0, Math.ceil(runDur - el));
+  $('clock').textContent = Math.floor(left / 60) + ':' + String(left % 60).padStart(2, '0');
+  if (el >= runDur) stop();
+}
+
 function stop() {
+  clearInterval(timer);
+  $('prog').hidden = true;
+  $('durSel').disabled = false;
+  $('clock').textContent = ticks.length ? 'captured ' + ticks.length + ' ticks' : '';
   stream?.getTracks().forEach(t => t.stop());
   ctx?.close();
   ctx = stream = null;
@@ -211,7 +231,7 @@ function stop() {
   render();
 }
 
-addEventListener('resize', () => drawFace(read(ticks, 52)));
+addEventListener('resize', () => drawFace(read(ticks, 52, 6)));
 drawFace(null);
 $('go').onclick = () => (ctx ? stop() : start());
 </script>
