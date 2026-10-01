@@ -22,8 +22,6 @@
     .card small { display: block; font-size: 12px; color: #8e8e93; }
     .card b { display: block; font-size: 17px; margin: 4px 0; font-variant-numeric: tabular-nums; }
     .card i { display: block; font-style: normal; font-size: 11px; color: #636366; }
-    #lift { display: flex; justify-content: space-between; align-items: center; background: #1c1c1e; border-radius: 16px; padding: 10px 16px; font-size: 15px; }
-    #lift input { width: 64px; background: #2c2c2e; color: #fff; border: 0; border-radius: 8px; padding: 6px; font-size: 15px; text-align: center; }
     button { border: 0; border-radius: 999px; padding: 16px; font-size: 17px; font-weight: 600; background: #30d158; color: #000; cursor: pointer; }
     button.stop { background: #ff453a; }
     #err { color: #ff453a; font-size: 13px; text-align: center; }
@@ -44,7 +42,6 @@
     <div class="card"><small>amplitude</small><b id="amp"></b><i id="ampn"></i></div>
   </div>
   <div id="err"></div>
-  <label id="lift">lift angle (°) <input id="liftIn" type="number" min="40" max="60" value="52" /></label>
   <button id="go">start</button>
 </main>
 <script>
@@ -126,13 +123,11 @@ registerProcessor('d', D);`;
 const $ = id => document.getElementById(id);
 let ctx, stream, ticks = [];
 
-$('liftIn').value = localStorage.getItem('lift') || 52;
-$('liftIn').oninput = () => { localStorage.setItem('lift', $('liftIn').value); render(); };
 
 function color(spd) { const a = Math.abs(spd); return a < 6 ? '#30d158' : a < 15 ? '#ffd60a' : '#ff453a'; }
 
 function render() {
-  const r = read(ticks, +$('liftIn').value || 52);
+  const r = read(ticks, 52);
   $('rate').hidden = $('unit').hidden = !r;
   $('stats').style.display = r ? 'flex' : 'none';
   $('prog').hidden = !!r || !ctx;
