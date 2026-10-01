@@ -33,6 +33,7 @@
     .card b { display: block; font-size: 17px; margin: 4px 0; font-variant-numeric: tabular-nums; }
     .card i { display: block; font-style: normal; font-size: 11px; color: #636366; }
     button { border: 0; border-radius: 999px; padding: 16px; font-size: 17px; font-weight: 600; background: #30d158; color: #000; cursor: pointer; }
+    button.ghost { margin-top: 10px; padding: 8px 18px; font-size: 13px; background: #1c1c1e; color: #fff; }
     button.stop { background: #ff453a; }
     #err { color: #ff453a; font-size: 13px; text-align: center; }
   </style>
@@ -197,10 +198,51 @@ function showGuide(p) {
       '<rect x="48" y="12" width="24" height="6" rx="3" fill="#2c2c2e"/>' +
       '<circle class="glow" cx="' + p.micX + '" cy="214" r="20" fill="url(#gl)"/>' +
       '<circle cx="' + p.micX + '" cy="214" r="3" fill="#30d158"/></svg>' +
-      '<p>' + p.name + ': microphone is on the bottom edge, put the watch right there</p>'
+      '<p>' + p.name + ': microphone is on the bottom edge, put the watch right there</p>' +
+      '<button id="ping" class="ghost">find mic</button>'
     : '';
 }
-detectPhone().then(showGuide);
+let ping;
+
+async function togglePing() {
+  if (ping) return stopPing();
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
+    });
+    const ac = new AudioContext(), an = ac.createAnalyser();
+    an.fftSize = 512;
+    ac.createMediaStreamSource(stream).connect(an);
+    const buf = new Float32Array(an.fftSize);
+    ping = { stream, ac, t: setTimeout(stopPing, 20000) };
+    const loop = () => {
+      an.getFloatTimeDomainData(buf);
+      const level = Math.min(1, Math.sqrt(buf.reduce((a, x) => a + x * x, 0) / buf.length) * 12);
+      const glow = document.querySelector('#guide .glow');
+      glow.style.animation = 'none';
+      glow.style.opacity = 0.2 + 0.8 * level;
+      glow.setAttribute('r', 16 + 14 * level);
+      ping.raf = requestAnimationFrame(loop);
+    };
+    loop();
+    $('ping').textContent = 'stop';
+    $('guide').querySelector('p').textContent = 'tap or scratch the edge of the phone, the circle brightens where the mic hears you';
+  } catch (e) {
+    $('err').textContent = 'microphone unavailable: ' + e.message;
+  }
+}
+
+function stopPing() {
+  if (!ping) return;
+  cancelAnimationFrame(ping.raf);
+  clearTimeout(ping.t);
+  ping.stream.getTracks().forEach(t => t.stop());
+  ping.ac.close();
+  ping = null;
+  detectPhone().then(p => { showGuide(p); if (p) $('ping').onclick = togglePing; });
+}
+
+detectPhone().then(p => { showGuide(p); if (p) $('ping').onclick = togglePing; });
 let ctx, stream, ticks = [], runDur = 30, startCtx = 0, timer = 0;
 
 
@@ -228,6 +270,7 @@ function render() {
 }
 
 async function start() {
+  stopPing();
   $('err').textContent = '';
   try {
     stream = await navigator.mediaDevices.getUserMedia({
