@@ -16,7 +16,9 @@
     #dot.on { background: #30d158; }
     #hero { min-height: 150px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 8px; color: #8e8e93; }
     #rate { font-size: 84px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
-    progress { width: 100%; height: 6px; accent-color: #30d158; }
+    #prog { width: 100%; height: 2px; background: #1c1c1e; border-radius: 1px; overflow: hidden; }
+    #prog[hidden] { display: none; }
+    #prog div { height: 100%; width: 0; background: #30d158; transition: width 0.12s linear; }
     #clock { font-size: 22px; font-variant-numeric: tabular-nums; color: #8e8e93; min-height: 26px; }
     #dur { display: flex; justify-content: space-between; align-items: center; background: #1c1c1e; border-radius: 16px; padding: 10px 16px; font-size: 15px; }
     #dur select { background: #2c2c2e; color: #fff; border: 0; border-radius: 8px; padding: 6px 8px; font-size: 15px; }
@@ -40,7 +42,7 @@
     <div id="unit" hidden>seconds per day</div>
   </div>
   <canvas id="face"></canvas>
-  <progress id="prog" max="1" value="0" hidden></progress>
+  <div id="prog" hidden><div></div></div>
   <div id="clock"></div>
   <div id="stats">
     <div class="card"><small>beat rate</small><b id="bph"></b><i id="hz"></i></div>
@@ -215,8 +217,7 @@ async function start() {
 
 function tick() {
   const el = ctx.currentTime - startCtx;
-  $('prog').max = runDur;
-  $('prog').value = Math.min(el, runDur);
+  $('prog').firstElementChild.style.width = Math.min(el / runDur, 1) * 100 + '%';
   const left = Math.max(0, Math.ceil(runDur - el));
   $('clock').textContent = Math.floor(left / 60) + ':' + String(left % 60).padStart(2, '0');
   if (el >= runDur) stop();
