@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>watch</title>
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; text-transform: lowercase; }
+    html, body { min-height: 100%; background: #000; color: #fff; font-family: ui-rounded, system-ui, sans-serif; }
+    body { display: flex; flex-direction: column; align-items: center; min-height: 100dvh; padding: 20px; }
+    main { width: 100%; max-width: 420px; flex: 1; display: flex; flex-direction: column; gap: 20px; }
+    header { display: flex; justify-content: space-between; font-size: 12px; letter-spacing: 3px; color: #8e8e93; }
+    #dot { width: 10px; height: 10px; border-radius: 50%; background: #3a3a3c; align-self: center; }
+    #dot.on { background: #30d158; }
+    #hero { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 8px; color: #8e8e93; }
+    #rate { font-size: 84px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
+    progress { width: 180px; accent-color: #30d158; }
+    #stats { display: none; gap: 12px; }
+    .card { flex: 1; background: #1c1c1e; border-radius: 16px; padding: 14px 4px; text-align: center; }
+    .card small { display: block; font-size: 12px; color: #8e8e93; }
+    .card b { display: block; font-size: 17px; margin: 4px 0; font-variant-numeric: tabular-nums; }
+    .card i { display: block; font-style: normal; font-size: 11px; color: #636366; }
+    #lift { display: flex; justify-content: space-between; align-items: center; background: #1c1c1e; border-radius: 16px; padding: 10px 16px; font-size: 15px; }
+    #lift input { width: 64px; background: #2c2c2e; color: #fff; border: 0; border-radius: 8px; padding: 6px; font-size: 15px; text-align: center; }
+    button { border: 0; border-radius: 999px; padding: 16px; font-size: 17px; font-weight: 600; background: #30d158; color: #000; cursor: pointer; }
+    button.stop { background: #ff453a; }
+    #err { color: #ff453a; font-size: 13px; text-align: center; }
+  </style>
+</head>
+<body>
+<main>
+  <header><span>watchmeter</span><span id="dot"></span></header>
+  <div id="hero">
+    <div id="msg">lay the watch dial up on the table, touching the microphone</div>
+    <div id="rate" hidden></div>
+    <div id="unit" hidden>seconds per day</div>
+    <progress id="prog" max="20" value="0" hidden></progress>
+  </div>
+  <div id="stats">
+    <div class="card"><small>beat rate</small><b id="bph"></b><i id="hz"></i></div>
+    <div class="card"><small>beat error</small><b id="be"></b><i id="bel"></i></div>
+    <div class="card"><small>amplitude</small><b id="amp"></b><i id="ampn"></i></div>
+  </div>
+  <div id="err"></div>
+  <label id="lift">lift angle (°) <input id="liftIn" type="number" min="40" max="60" value="52" /></label>
+  <button id="go">start</button>
+</main>
+<script>
+// est-start
+const STD = [14400, 18000, 19800, 21600, 25200, 28800, 36000];
+
+function read(ticks, lift) {
+  const t = ticks.map(k => k.time);
+  if (t.length < 20) return null;
+  const spans = [];
+  for (let i = 2; i < t.length; i++) spans.push((t[i] - t[i - 2]) / 2);
+  spans.sort((a, b) => a - b);
+  const iv = spans[spans.length >> 1];
+  const ks = t.map(x => Math.round((x - t[0]) / iv));
+  const n = t.length;
+  const km = ks.reduce((a, b) => a + b, 0) / n, tm = t.reduce((a, b) => a + b, 0) / n;
+  let cov = 0, v = 0;
+  for (let i = 0; i < n; i++) { cov += (ks[i] - km) * (t[i] - tm); v += (ks[i] - km) ** 2; }
+  if (v === 0) return null;
+  const slope = cov / v, icpt = tm - slope * km;
+  const e = { s: 0, c: 0 }, o = { s: 0, c: 0 };
+  for (let i = 0; i < n; i++) {
+    const r = t[i] - (icpt + slope * ks[i]);
+    const b = ((ks[i] % 2) + 2) % 2 === 0 ? e : o;
+    b.s += r; b.c++;
+  }
+  if (!e.c || !o.c) return null;
+  const bph = STD.reduce((a, b) => Math.abs(b - 3600 / slope) < Math.abs(a - 3600 / slope) ? b : a);
+  let amplitude = null;
+  const gaps = ticks.map(k => k.gap).filter(g => g != null).sort((a, b) => a - b);
+  if (gaps.length >= 10) {
+    const a = lift / (2 * Math.sin(Math.PI * gaps[gaps.length >> 1] * bph / 3600));
+    if (a >= 100 && a <= 360) amplitude = a;
+  }
+  return {
+    spd: (3600 / bph / slope - 1) * 86400,
+    bph, amplitude,
+    beatErrorMs: Math.abs(e.s / e.c - o.s / o.c) * 1000,
+  };
+}
+// est-end
+
+const workletSrc = `
+class D extends AudioWorkletProcessor {
+  constructor() {
+    super();
+    this.n = 0; this.last = 0; this.noise = 0.001; this.lastTick = -1e6;
+    this.pending = false; this.onset = 0; this.peak = 0; this.best = 0; this.bestN = 0;
+  }
+  process(inputs) {
+    const x = inputs[0][0];
+    if (!x) return true;
+    const rate = sampleRate, out = [];
+    const refractory = 0.05 * rate, settle = 0.0015 * rate, window = 0.012 * rate;
+    for (let i = 0; i < x.length; i++) {
+      const d = Math.abs(x[i] - this.last);
+      this.last = x[i];
+      if (this.pending) {
+        const age = this.n - this.onset;
+        if (age < settle) this.peak = Math.max(this.peak, d);
+        else if (d > this.best) { this.best = d; this.bestN = this.n; }
+        if (age >= window) {
+          out.push({ time: this.onset / rate, gap: this.best > 0.25 * this.peak ? (this.bestN - this.onset) / rate : null });
+          this.pending = false;
+        }
+      } else if (d > Math.max(8 * this.noise, 0.003) && this.n - this.lastTick > refractory) {
+        this.pending = true; this.onset = this.n; this.lastTick = this.n;
+        this.peak = d; this.best = 0; this.bestN = this.n;
+      }
+      this.noise += 0.001 * (d - this.noise);
+      this.n++;
+    }
+    if (out.length) this.port.postMessage(out);
+    return true;
+  }
+}
+registerProcessor('d', D);`;
+
+const $ = id => document.getElementById(id);
+let ctx, stream, ticks = [];
+
+$('liftIn').value = localStorage.getItem('lift') || 52;
+$('liftIn').oninput = () => { localStorage.setItem('lift', $('liftIn').value); render(); };
+
+function color(spd) { const a = Math.abs(spd); return a < 6 ? '#30d158' : a < 15 ? '#ffd60a' : '#ff453a'; }
+
+function render() {
+  const r = read(ticks, +$('liftIn').value || 52);
+  $('rate').hidden = $('unit').hidden = !r;
+  $('stats').style.display = r ? 'flex' : 'none';
+  $('prog').hidden = !!r || !ctx;
+  $('prog').value = ticks.length;
+  $('msg').hidden = !!r;
+  $('msg').textContent = ctx ? 'listening, detecting beat rate' : 'lay the watch dial up on the table, touching the microphone';
+  if (!r) return;
+  $('rate').textContent = (r.spd >= 0 ? '+' : '') + r.spd.toFixed(1);
+  $('rate').style.color = color(r.spd);
+  $('bph').textContent = r.bph.toLocaleString() + ' bph';
+  $('hz').textContent = r.bph / 3600 + ' hz, auto';
+  $('be').textContent = r.beatErrorMs.toFixed(1) + ' ms';
+  $('bel').textContent = r.beatErrorMs < 0.5 ? 'excellent' : r.beatErrorMs < 1.5 ? 'good' : 'high';
+  $('amp').textContent = r.amplitude ? Math.round(r.amplitude) + '°' : '–';
+  $('ampn').textContent = r.amplitude ? 'dial up' : 'no clear reading';
+}
+
+async function start() {
+  $('err').textContent = '';
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
+    });
+    ctx = new AudioContext();
+    const url = URL.createObjectURL(new Blob([workletSrc], { type: 'text/javascript' }));
+    await ctx.audioWorklet.addModule(url);
+    const node = new AudioWorkletNode(ctx, 'd');
+    node.port.onmessage = e => {
+      ticks.push(...e.data);
+      const cutoff = ticks[ticks.length - 1].time - 60;
+      ticks = ticks.filter(k => k.time >= cutoff);
+      render();
+    };
+    ctx.createMediaStreamSource(stream).connect(node);
+  } catch (e) {
+    $('err').textContent = 'microphone unavailable: ' + e.message;
+    return stop();
+  }
+  ticks = [];
+  $('go').textContent = 'stop'; $('go').className = 'stop'; $('dot').className = 'on';
+  render();
+}
+
+function stop() {
+  stream?.getTracks().forEach(t => t.stop());
+  ctx?.close();
+  ctx = stream = null;
+  $('go').textContent = 'start'; $('go').className = ''; $('dot').className = '';
+  render();
+}
+
+$('go').onclick = () => (ctx ? stop() : start());
+</script>
+</body>
+</html>
