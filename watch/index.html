@@ -9,14 +9,15 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; text-transform: lowercase; }
     html, body { min-height: 100%; background: #000; color: #fff; font-family: ui-rounded, system-ui, sans-serif; }
-    body { display: flex; flex-direction: column; align-items: center; min-height: 100dvh; padding: 20px; }
-    main { width: 100%; max-width: 420px; flex: 1; display: flex; flex-direction: column; gap: 20px; }
-    header { display: flex; justify-content: space-between; font-size: 12px; letter-spacing: 3px; color: #8e8e93; }
+    body { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100dvh; padding: 20px; text-align: center; }
+    main { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 20px; }
+    header { display: flex; justify-content: center; gap: 12px; font-size: 12px; letter-spacing: 3px; color: #8e8e93; }
     #dot { width: 10px; height: 10px; border-radius: 50%; background: #3a3a3c; align-self: center; }
     #dot.on { background: #30d158; }
-    #hero { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 8px; color: #8e8e93; }
+    #hero { min-height: 150px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 8px; color: #8e8e93; }
     #rate { font-size: 84px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
     progress { width: 180px; accent-color: #30d158; }
+    #face { width: 100%; height: 240px; background: #0b0b0c; border-radius: 16px; }
     #stats { display: none; gap: 12px; }
     .card { flex: 1; background: #1c1c1e; border-radius: 16px; padding: 14px 4px; text-align: center; }
     .card small { display: block; font-size: 12px; color: #8e8e93; }
@@ -36,6 +37,7 @@
     <div id="unit" hidden>seconds per day</div>
     <progress id="prog" max="20" value="0" hidden></progress>
   </div>
+  <canvas id="face"></canvas>
   <div id="stats">
     <div class="card"><small>beat rate</small><b id="bph"></b><i id="hz"></i></div>
     <div class="card"><small>beat error</small><b id="be"></b><i id="bel"></i></div>
@@ -76,7 +78,9 @@ function read(ticks, lift) {
     const a = lift / (2 * Math.sin(Math.PI * gaps[gaps.length >> 1] * bph / 3600));
     if (a >= 100 && a <= 360) amplitude = a;
   }
+  const trace = t.map((x, i) => ({ even: ((ks[i] % 2) + 2) % 2 === 0, dev: x - (icpt + 3600 / bph * ks[i]), time: x }));
   return {
+    trace,
     spd: (3600 / bph / slope - 1) * 86400,
     bph, amplitude,
     beatErrorMs: Math.abs(e.s / e.c - o.s / o.c) * 1000,
@@ -120,6 +124,33 @@ class D extends AudioWorkletProcessor {
 }
 registerProcessor('d', D);`;
 
+function drawFace(r) {
+  const c = $('face'), dpr = devicePixelRatio || 1;
+  const W = c.clientWidth, H = c.clientHeight;
+  c.width = W * dpr; c.height = H * dpr;
+  const g = c.getContext('2d');
+  g.scale(dpr, dpr);
+  const laneW = W / 2, SPAN = 40; // ms shown per lane, wraps like paper
+  g.strokeStyle = '#2c2c2e'; g.fillStyle = '#636366'; g.font = '11px system-ui'; g.textAlign = 'center'; g.lineWidth = 1;
+  for (const [cx, label] of [[laneW / 2, 'tick'], [laneW * 1.5, 'tock']]) {
+    for (const f of [-0.5, -0.25, 0, 0.25, 0.5]) {
+      const x = cx + f * laneW;
+      g.beginPath(); g.moveTo(x, 18); g.lineTo(x, H); g.stroke();
+    }
+    g.fillText(label, cx, 12);
+  }
+  g.beginPath(); g.moveTo(laneW, 0); g.lineTo(laneW, H); g.strokeStyle = '#3a3a3c'; g.stroke();
+  if (!r) return;
+  const end = r.trace[r.trace.length - 1].time;
+  g.fillStyle = '#30d158';
+  for (const p of r.trace) {
+    const w = (((p.dev * 1000 + SPAN / 2) % SPAN) + SPAN) % SPAN - SPAN / 2;
+    const x = (p.even ? laneW / 2 : laneW * 1.5) + w / SPAN * laneW;
+    const y = 18 + (1 - (end - p.time) / 60) * (H - 24);
+    g.beginPath(); g.arc(x, y, 2.2, 0, 7); g.fill();
+  }
+}
+
 const $ = id => document.getElementById(id);
 let ctx, stream, ticks = [];
 
@@ -128,6 +159,7 @@ function color(spd) { const a = Math.abs(spd); return a < 6 ? '#30d158' : a < 15
 
 function render() {
   const r = read(ticks, 52);
+  drawFace(r);
   $('rate').hidden = $('unit').hidden = !r;
   $('stats').style.display = r ? 'flex' : 'none';
   $('prog').hidden = !!r || !ctx;
@@ -179,6 +211,8 @@ function stop() {
   render();
 }
 
+addEventListener('resize', () => drawFace(read(ticks, 52)));
+drawFace(null);
 $('go').onclick = () => (ctx ? stop() : start());
 </script>
 </body>
