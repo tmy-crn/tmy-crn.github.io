@@ -131,25 +131,29 @@ registerProcessor('d', D);`;
 
 function drawFace(r) {
   const c = $('face'), dpr = devicePixelRatio || 1;
-  const W = c.clientWidth, H = c.clientHeight, SPAN = 40; // ms across the face, wraps like paper
+  const W = c.clientWidth, H = c.clientHeight, SPAN = 40, TOP = 54; // SPAN: ms across the face, wraps like paper
   c.width = W * dpr; c.height = H * dpr;
   const g = c.getContext('2d');
   g.scale(dpr, dpr);
-  g.strokeStyle = '#2c2c2e'; g.lineWidth = 1;
-  for (const f of [0.1, 0.25, 0.5, 0.75, 0.9]) {
-    g.beginPath(); g.moveTo(W * f, 28); g.lineTo(W * f, H); g.stroke();
+  const sx = v => W * (0.09 + 0.82 * (v + 30) / 60);
+  g.font = '12px system-ui'; g.textBaseline = 'middle'; g.textAlign = 'center'; g.lineWidth = 1;
+  for (const v of [-30, -20, -10, 0, 10, 20, 30]) {
+    g.strokeStyle = v === 0 ? '#3a3a3c' : '#2c2c2e';
+    g.beginPath(); g.moveTo(sx(v), 28); g.lineTo(sx(v), H); g.stroke();
+    g.fillStyle = v < 0 ? '#ff453a' : v > 0 ? '#30d158' : '#fff';
+    g.fillText(v > 0 ? '+' + v : v < 0 ? '−' + -v : '0', sx(v), 14);
   }
-  g.strokeStyle = '#3a3a3c';
-  g.beginPath(); g.moveTo(W / 2, 28); g.lineTo(W / 2, H); g.stroke();
-  g.font = '600 20px system-ui'; g.textBaseline = 'middle';
-  g.fillStyle = '#ff453a'; g.textAlign = 'left'; g.fillText('−', 14, 14);
-  g.fillStyle = '#30d158'; g.textAlign = 'right'; g.fillText('+', W - 14, 14);
   if (!r) return;
+  if (r.trace.length >= 20) {
+    const x = sx(Math.max(-30, Math.min(30, r.spd)));
+    g.fillStyle = color(r.spd);
+    g.beginPath(); g.moveTo(x, 30); g.lineTo(x - 6, 42); g.lineTo(x + 6, 42); g.fill();
+  }
   for (const p of r.trace) {
     // a fast watch ticks early, so its dots drift right
     const w = (((p.dev * 1000 + SPAN / 2) % SPAN) + SPAN) % SPAN - SPAN / 2;
     g.fillStyle = p.even ? '#30d158' : '#8ee6a6';
-    g.beginPath(); g.arc(W / 2 - w / SPAN * W, 28 + Math.min(p.time / runDur, 1) * (H - 34), 2.2, 0, 7); g.fill();
+    g.beginPath(); g.arc(W / 2 - w / SPAN * W, TOP + Math.min(p.time / runDur, 1) * (H - TOP - 6), 2.2, 0, 7); g.fill();
   }
 }
 
