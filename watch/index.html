@@ -23,6 +23,10 @@
     #dur { display: flex; justify-content: space-between; align-items: center; background: #1c1c1e; border-radius: 16px; padding: 10px 16px; font-size: 15px; }
     #dur select { background: #2c2c2e; color: #fff; border: 0; border-radius: 8px; padding: 6px 8px; font-size: 15px; }
     #face { width: 100%; height: 240px; background: #0b0b0c; border-radius: 16px; }
+    #guide svg { height: 150px; }
+    #guide p { font-size: 12px; color: #636366; margin-top: 6px; }
+    .glow { animation: pulse 1.8s ease-in-out infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
     #stats { display: none; gap: 12px; }
     .card { flex: 1; background: #1c1c1e; border-radius: 16px; padding: 14px 4px; text-align: center; }
     .card small { display: block; font-size: 12px; color: #8e8e93; }
@@ -37,6 +41,7 @@
 <main>
   <header><span>watchmeter</span><span id="dot"></span></header>
   <div id="hero">
+    <div id="guide"></div>
     <div id="msg">lay the watch dial up on the table, touching the microphone</div>
     <div id="rate" hidden></div>
     <div id="unit" hidden>seconds per day</div>
@@ -160,6 +165,42 @@ function drawFace(r) {
 }
 
 const $ = id => document.getElementById(id);
+
+// screen size and pixel ratio only narrow an iPhone down to a model group
+const IPHONES = {
+  '320x568@2': 'iphone 5s / se', '375x667@2': 'iphone 6 to 8 / se',
+  '414x736@3': 'iphone plus', '375x812@3': 'iphone x / 11 pro / mini',
+  '414x896@2': 'iphone xr / 11', '414x896@3': 'iphone xs max / 11 pro max',
+  '390x844@3': 'iphone 12 to 14', '428x926@3': 'iphone 12 / 13 / 14 plus and pro max',
+  '393x852@3': 'iphone 14 pro to 16', '430x932@3': 'iphone 14 pro max to 16 plus',
+  '402x874@3': 'iphone 16 pro / 17', '440x956@3': 'iphone pro max',
+};
+
+async function detectPhone() {
+  const ua = navigator.userAgent;
+  if (/iPhone/.test(ua)) {
+    const w = Math.min(screen.width, screen.height), h = Math.max(screen.width, screen.height);
+    return { name: IPHONES[w + 'x' + h + '@' + devicePixelRatio] || 'iphone', micX: 42 };
+  }
+  if (/Android/.test(ua)) {
+    let model = '';
+    try { model = (await navigator.userAgentData.getHighEntropyValues(['model'])).model; } catch {}
+    return { name: model && model.length > 1 ? model : 'android phone', micX: 60 };
+  }
+  return null;
+}
+
+function showGuide(p) {
+  $('guide').innerHTML = p
+    ? '<svg viewBox="0 0 120 230"><defs><radialGradient id="gl"><stop offset="0" stop-color="#30d158"/><stop offset="1" stop-color="#30d158" stop-opacity="0"/></radialGradient></defs>' +
+      '<rect x="20" y="6" width="80" height="208" rx="18" fill="#0b0b0c" stroke="#636366" stroke-width="2"/>' +
+      '<rect x="48" y="12" width="24" height="6" rx="3" fill="#2c2c2e"/>' +
+      '<circle class="glow" cx="' + p.micX + '" cy="214" r="20" fill="url(#gl)"/>' +
+      '<circle cx="' + p.micX + '" cy="214" r="3" fill="#30d158"/></svg>' +
+      '<p>' + p.name + ': microphone is on the bottom edge, put the watch right there</p>'
+    : '';
+}
+detectPhone().then(showGuide);
 let ctx, stream, ticks = [], runDur = 30, startCtx = 0, timer = 0;
 
 
@@ -172,6 +213,7 @@ function render() {
   $('rate').hidden = $('unit').hidden = !full;
   $('stats').style.display = full ? 'flex' : 'none';
   $('msg').hidden = full;
+  $('guide').hidden = full;
   $('msg').textContent = ctx ? 'listening, detecting beat rate' : 'lay the watch dial up on the table, touching the microphone';
   if (!full) return;
   $('rate').textContent = (r.spd >= 0 ? '+' : '') + r.spd.toFixed(1);
