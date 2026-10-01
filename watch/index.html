@@ -155,7 +155,7 @@ function drawFace(r) {
     // a fast watch ticks early, so its dots drift right
     const w = (((p.dev * 1000 + SPAN / 2) % SPAN) + SPAN) % SPAN - SPAN / 2;
     g.fillStyle = p.even ? '#30d158' : '#8ee6a6';
-    g.beginPath(); g.arc(W / 2 - w / SPAN * W, TOP + Math.min(p.time / runDur, 1) * (H - TOP - 6), 2.2, 0, 7); g.fill();
+    g.beginPath(); g.arc(W / 2 - w / SPAN * W, H - 6 - Math.min(p.time / runDur, 1) * (H - TOP - 6), 2.2, 0, 7); g.fill();
   }
 }
 
