@@ -131,27 +131,25 @@ registerProcessor('d', D);`;
 
 function drawFace(r) {
   const c = $('face'), dpr = devicePixelRatio || 1;
-  const W = c.clientWidth, H = c.clientHeight;
+  const W = c.clientWidth, H = c.clientHeight, SPAN = 40; // ms across the face, wraps like paper
   c.width = W * dpr; c.height = H * dpr;
   const g = c.getContext('2d');
   g.scale(dpr, dpr);
-  const laneW = W / 2, SPAN = 40; // ms shown per lane, wraps like paper
-  g.strokeStyle = '#2c2c2e'; g.fillStyle = '#636366'; g.font = '11px system-ui'; g.textAlign = 'center'; g.lineWidth = 1;
-  for (const [cx, label] of [[laneW / 2, 'tick'], [laneW * 1.5, 'tock']]) {
-    for (const f of [-0.5, -0.25, 0, 0.25, 0.5]) {
-      const x = cx + f * laneW;
-      g.beginPath(); g.moveTo(x, 18); g.lineTo(x, H); g.stroke();
-    }
-    g.fillText(label, cx, 12);
+  g.strokeStyle = '#2c2c2e'; g.lineWidth = 1;
+  for (const f of [0.1, 0.25, 0.5, 0.75, 0.9]) {
+    g.beginPath(); g.moveTo(W * f, 28); g.lineTo(W * f, H); g.stroke();
   }
-  g.beginPath(); g.moveTo(laneW, 0); g.lineTo(laneW, H); g.strokeStyle = '#3a3a3c'; g.stroke();
+  g.strokeStyle = '#3a3a3c';
+  g.beginPath(); g.moveTo(W / 2, 28); g.lineTo(W / 2, H); g.stroke();
+  g.font = '600 20px system-ui'; g.textBaseline = 'middle';
+  g.fillStyle = '#ff453a'; g.textAlign = 'left'; g.fillText('−', 14, 14);
+  g.fillStyle = '#30d158'; g.textAlign = 'right'; g.fillText('+', W - 14, 14);
   if (!r) return;
-  g.fillStyle = '#30d158';
   for (const p of r.trace) {
+    // a fast watch ticks early, so its dots drift right
     const w = (((p.dev * 1000 + SPAN / 2) % SPAN) + SPAN) % SPAN - SPAN / 2;
-    const x = (p.even ? laneW / 2 : laneW * 1.5) + w / SPAN * laneW;
-    const y = 18 + Math.min(p.time / runDur, 1) * (H - 24);
-    g.beginPath(); g.arc(x, y, 2.2, 0, 7); g.fill();
+    g.fillStyle = p.even ? '#30d158' : '#8ee6a6';
+    g.beginPath(); g.arc(W / 2 - w / SPAN * W, 28 + Math.min(p.time / runDur, 1) * (H - 34), 2.2, 0, 7); g.fill();
   }
 }
 
@@ -172,6 +170,7 @@ function render() {
   if (!full) return;
   $('rate').textContent = (r.spd >= 0 ? '+' : '') + r.spd.toFixed(1);
   $('rate').style.color = color(r.spd);
+  $('unit').textContent = r.spd >= 0 ? 'seconds gained per day' : 'seconds lost per day';
   $('bph').textContent = r.bph.toLocaleString() + ' bph';
   $('hz').textContent = r.bph / 3600 + ' hz, auto';
   $('be').textContent = r.beatErrorMs.toFixed(1) + ' ms';
